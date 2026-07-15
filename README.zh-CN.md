@@ -164,4 +164,6 @@ aisync logs
 - `docs/SECURITY_STANDARD.md`：安全标准
 - `docs/PREPARATION.md`：开发准备事项
 - `docs/PROFILE_SPEC.md`：profile 设计草案
-
+- `docs/WORKFLOW.md`：开发工作流和 GitHub CLI 使用规范
+- `docs/TESTING.md`：测试标准和边界测试清单
+- `CONTRIBUTING.md`：贡献规范

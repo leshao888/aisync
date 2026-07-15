@@ -52,6 +52,69 @@ Avoid unless the user explicitly asks:
 - Profiles should be easy to add, but hard to make unsafe.
 - The core should be app-agnostic. Codex is the first profile, not a special case baked into the engine.
 
+## Required Development Workflow
+
+When the user gives a development request, handle it end to end unless the user explicitly asks for planning only.
+
+Default workflow:
+
+1. Read the relevant code and project guidance before editing.
+2. Define the narrow implementation scope.
+3. Implement the change.
+4. Add or update tests for normal paths, failure paths, and security boundaries.
+5. Run the full local verification suite.
+6. Fix failures until all required tests pass.
+7. Update user-facing docs when commands, behavior, safety rules, or workflows change.
+8. Commit only after tests pass.
+9. Use Chinese commit messages.
+10. Use `gh` for GitHub repository and pull request operations when network/auth are available.
+
+Do not commit code with failing tests. Do not skip boundary tests for sync, restore, encryption, secret scanning, Git, path handling, or profile behavior.
+
+Required local verification before commit:
+
+```bash
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+PYTHONPYCACHEPREFIX=$(mktemp -d) python3 -m compileall -q src tests
+```
+
+Use additional targeted tests when a change affects:
+
+- denied-file rules
+- secret scanning
+- age encryption/decryption
+- Git remote behavior
+- restore backup behavior
+- symlink handling
+- archive extraction
+- cross-platform path resolution
+
+## Commit And GitHub Rules
+
+Commit messages must be Chinese and should use this style:
+
+```text
+功能: 添加 Codex 同步预览
+修复: 修复恢复备份失败时未中止的问题
+文档: 添加简体中文 README
+测试: 增加危险文件边界测试
+安全: 增加私钥文件拦截规则
+重构: 拆分 profile 校验逻辑
+构建: 添加 GitHub Actions CI
+```
+
+Prefer feature branches and pull requests for non-trivial work:
+
+```bash
+git checkout -b feature/short-topic
+git add .
+git commit -m "功能: 添加 xxx"
+git push -u origin feature/short-topic
+gh pr create --title "功能: 添加 xxx" --body "..."
+```
+
+Small documentation-only changes may be committed directly to `main` when the user asks for it.
+
 ## Planned CLI Surface
 
 Initial commands:
@@ -138,3 +201,6 @@ Project planning documents live in `docs/`.
 - `docs/SECURITY_STANDARD.md`
 - `docs/PREPARATION.md`
 - `docs/PROFILE_SPEC.md`
+- `docs/WORKFLOW.md`
+- `docs/TESTING.md`
+- `CONTRIBUTING.md`

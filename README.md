@@ -164,4 +164,6 @@ aisync logs
 - `docs/SECURITY_STANDARD.md` for safety rules
 - `docs/PREPARATION.md` for pre-development work
 - `docs/PROFILE_SPEC.md` for app profile design
-
+- `docs/WORKFLOW.md` for development workflow and GitHub CLI usage
+- `docs/TESTING.md` for testing standards and boundary cases
+- `CONTRIBUTING.md` for contribution rules
