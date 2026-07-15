@@ -7,128 +7,95 @@
 ![Profile](https://img.shields.io/badge/profile-Codex-111827)
 ![Encryption](https://img.shields.io/badge/encryption-age-22C55E)
 ![Secret Scan](https://img.shields.io/badge/secret%20scan-gitleaks-F97316)
+![CI](https://github.com/leshao888/aisync/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-64748B)
 
-AIsync is a privacy-first sync tool for selected local AI app data.
+AIsync safely syncs selected local AI app data across machines.
 
-The `v0.1` target is safe Codex session sync through a Git repository that stores only encrypted packages. Later targets may include Claude Code, Cursor, Gemini CLI, and other local AI tools.
+The first supported profile is `Codex`. AIsync does not upload plaintext chat history to GitHub: it collects only allowlisted files, blocks dangerous files, scans plaintext staging data with `gitleaks`, encrypts the package with `age`, and stores only encrypted vault packages in Git.
 
-## Highlights
+## Who Is This For?
 
-- Allowlist-first app profiles
-- Denied-file guard for auth files, databases, private keys, tokens, and `.env`
-- Plaintext secret scanning with `gitleaks`
-- Encrypted vault packages with `age`
-- Git-backed storage for encrypted packages only
-- Restore preview and backup-before-write behavior
-- App-agnostic profile model for future tools
+Use AIsync if you want to:
 
-## Repository Split
+- move Codex sessions between machines without relying on the same Codex account
+- keep sync data in your own GitHub repository
+- avoid committing auth files, `.env`, tokens, sqlite databases, or private keys
+- use a profile-based framework that can later support Claude Code, Cursor, Gemini CLI, and other local AI tools
 
-Use two repositories:
+## Two Repositories
 
-```text
-aisync       public source repository
-aisync-vault private encrypted data repository
-```
-
-This repository should contain only source code, docs, tests, and app profiles. Chat history and local AI app data should go into a separate private vault repository as encrypted `.age` packages.
-
-## Safety Model
-
-AIsync uses this default flow:
+Keep source code and personal sync data separate:
 
 ```text
-allowlist collection
--> denied-file guard
--> gitleaks plaintext scan
--> tar.gz archive
--> age encryption
--> Git commit/push of encrypted package only
+aisync        public source repository
+aisync-vault  private encrypted data repository
 ```
 
-Private Git repositories are not treated as encryption. Confidentiality comes from `age`.
-
-## Install For Local Development
-
-```bash
-cd /Users/yaojiale/Developer/projects/aisync
-python3 -m pip install -e .
+```text
+~/.codex
+  |
+  | allowlist + scan + age encrypt
+  v
+aisync-vault private Git repository
+  |
+  | decrypt + backup + restore
+  v
+another machine ~/.codex
 ```
 
-Or run without installation:
+This source repository can be public. Your `aisync-vault` repository should be private and should contain only encrypted `.age` packages plus non-sensitive manifests.
 
-```bash
-PYTHONPATH=src python3 -m aisync --version
-```
+## Quick Start
 
-## Required Tools
-
-- `git`
-- `age`
-- `gitleaks`
-
-On macOS:
+Install required tools:
 
 ```bash
 brew install age gitleaks
 ```
 
-## Quick Start
+Clone and run AIsync:
 
-Create a separate private sync repository:
+```bash
+git clone git@github.com:leshao888/aisync.git
+cd aisync
+PYTHONPATH=src python3 -m aisync --version
+```
+
+Create a private vault repository and initialize it:
 
 ```bash
 mkdir -p ~/Developer/projects/aisync-vault
 cd ~/Developer/projects/aisync-vault
 git init
 git branch -M main
-```
+gh repo create aisync-vault --private --source . --remote origin
 
-Initialize the vault through AIsync:
-
-```bash
-cd /Users/yaojiale/Developer/projects/aisync
+cd ~/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault init
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault keygen
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault doctor
 ```
 
-Add a private Git remote manually:
+Preview and run Codex sync:
 
 ```bash
-cd ~/Developer/projects/aisync-vault
-git remote add origin git@github.com:YOUR_USER/aisync-vault.git
-```
-
-AIsync cannot verify remote privacy offline. Confirm the repository is private on GitHub or your Git host.
-
-Preview Codex sync:
-
-```bash
-cd /Users/yaojiale/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
-```
-
-Run Codex sync:
-
-```bash
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex
 ```
 
-Preview restore:
+Read the full guide: [Quick Start](docs/QUICKSTART.md).
+
+## Restore
+
+Close Codex before restore, then preview first:
 
 ```bash
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault restore codex --dry-run
-```
-
-Restore in merge mode:
-
-```bash
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault restore codex
 ```
 
-Close Codex before running real restore. AIsync v0.1 stops restore if it detects a matching app process on macOS/Linux.
+Restore creates a backup before writing. Read the full recovery guide: [Recovery](docs/RECOVERY.md).
 
 ## Commands
 
@@ -147,7 +114,25 @@ aisync status
 aisync logs
 ```
 
-## Current Limitations
+## Expected Output
+
+Successful sync should look roughly like this:
+
+```text
+INFO    profile: codex
+OK      matched allowlist: 128 files, 42 MB
+OK      copied to staging: 128 files
+OK      deny guard passed
+OK      gitleaks scan passed
+OK      encrypted package: vault/codex-20260715-133000.tar.gz.age
+OK      git push completed
+```
+
+## Current Status
+
+`v0.1` is under development. Codex is the first stable profile.
+
+Current limitations:
 
 - `doctor` requires `git`, `age`, and `gitleaks`.
 - `sync` stops if the repo is not initialized with Git.
@@ -156,16 +141,17 @@ aisync logs
 - Restore supports `merge` and `replace-file`; destructive tree replacement is intentionally not available.
 - v0.1 uses `tar.gz` from the Python standard library. `zstd` can be added later.
 
-## Project Docs
+## Documentation
 
-- `AGENTS.md` for durable project guidance
-- `docs/ARCHITECTURE.md` for system design
-- `docs/ROADMAP.md` for release planning
-- `docs/SECURITY_STANDARD.md` for safety rules
-- `docs/PREPARATION.md` for pre-development work
-- `docs/PROFILE_SPEC.md` for app profile design
-- `docs/WORKFLOW.md` for development workflow and GitHub CLI usage
-- `docs/TESTING.md` for testing standards and boundary cases
-- `CONTRIBUTING.md` for contribution rules
+- [Quick Start](docs/QUICKSTART.md)
+- [Recovery](docs/RECOVERY.md)
+- [FAQ](docs/FAQ.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Security Standard](docs/SECURITY_STANDARD.md)
+- [Profile Spec](docs/PROFILE_SPEC.md)
+- [Workflow](docs/WORKFLOW.md)
+- [Testing](docs/TESTING.md)
+- [Contributing](CONTRIBUTING.md)
 
-Simplified Chinese translations use the `.zh-CN.md` suffix, such as `docs/ARCHITECTURE.zh-CN.md`.
+Simplified Chinese translations use the `.zh-CN.md` suffix, such as `docs/QUICKSTART.zh-CN.md`.
