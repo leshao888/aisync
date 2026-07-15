@@ -104,6 +104,8 @@ profiles/<app>.yaml
 
 Core logic 不应包含 hard-coded app-specific paths，除了 bundled default profiles。
 
+Bundled experimental profiles 与 stable profiles 共用 collection、deny guard、secret scan、encryption 和 Git pipeline。Runtime capabilities 由 core 强制执行：`supports_restore: false` 的 profile 会在 pull、decrypt、backup 或 target write 前被拒绝。因此初始 Claude Code profile 仅支持 sync。
+
 ## Platform Strategy
 
 所有 source paths 必须按 platform 定义：

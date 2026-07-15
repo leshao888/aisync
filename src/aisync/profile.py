@@ -35,6 +35,10 @@ class Profile:
         data = self.path.read_bytes()
         return hashlib.sha256(data).hexdigest()
 
+    @property
+    def supports_restore(self) -> bool:
+        return self.capabilities.get("supports_restore") is True
+
     def source_path(self) -> Path:
         key = platform_key()
         raw = self.source.get(key)
@@ -59,14 +63,19 @@ def list_profiles(extra: Path | None = None) -> list[str]:
     for directory in profile_dirs(extra):
         if directory.exists():
             for path in directory.glob("*.yaml"):
-                names.add(path.stem)
+                names.add(path.stem.removesuffix(".experimental"))
     return sorted(names)
 
 
 def find_profile(name: str, extra: Path | None = None) -> Path:
     candidates = []
     for directory in profile_dirs(extra):
-        candidates.append(directory / f"{name}.yaml")
+        candidates.extend(
+            [
+                directory / f"{name}.yaml",
+                directory / f"{name}.experimental.yaml",
+            ]
+        )
     for path in candidates:
         if path.exists():
             return path
@@ -117,11 +126,13 @@ def validate_profile(raw: dict[str, Any], path: Path) -> Profile:
     allow_overwrite = restore.get("allow_overwrite")
     if allow_overwrite is not None and not isinstance(allow_overwrite, bool):
         raise ProfileError(f"Profile {path} restore.allow_overwrite must be true or false.")
+    capabilities = _optional_map(raw, "capabilities", path)
+    _validate_capabilities(capabilities, path)
     process_names = raw.get("process_names") or []
     if not isinstance(process_names, list):
         raise ProfileError(f"Profile {path} process_names must be a list.")
     name = str(raw["name"])
-    if name != path.stem and not path.stem.endswith(".experimental"):
+    if path.stem not in {name, f"{name}.experimental"}:
         raise ProfileError(f"Profile filename and name differ: {path.stem} != {name}")
     return Profile(
         name=name,
@@ -132,7 +143,7 @@ def validate_profile(raw: dict[str, Any], path: Path) -> Profile:
         deny=deny,
         risk={str(k): str(v) for k, v in _optional_map(raw, "risk", path).items()},
         restore=restore,
-        capabilities=_optional_map(raw, "capabilities", path),
+        capabilities=capabilities,
         process_names=[str(v) for v in process_names],
         path=path,
         raw=raw,
@@ -159,6 +170,28 @@ def _validate_source(source: dict[str, str], path: Path) -> None:
     for key, value in source.items():
         if not value.strip():
             raise ProfileError(f"Profile {path} source.{key} must not be empty.")
+
+
+def _validate_capabilities(capabilities: dict[str, Any], path: Path) -> None:
+    supported = {
+        "supports_restore",
+        "supports_merge",
+        "requires_app_closed_for_restore",
+    }
+    unknown = sorted(set(capabilities) - supported)
+    if unknown:
+        raise ProfileError(
+            f"Profile {path} has unsupported capabilities: {', '.join(unknown)}",
+            next_action="Use only capabilities defined by profile schema version 1.",
+        )
+    for key, value in capabilities.items():
+        if not isinstance(value, bool):
+            raise ProfileError(f"Profile {path} capabilities.{key} must be true or false.")
+    if capabilities.get("supports_merge") and not capabilities.get("supports_restore"):
+        raise ProfileError(
+            f"Profile {path} cannot support merge while restore is disabled.",
+            next_action="Set supports_restore: true or supports_merge: false.",
+        )
 
 
 def _validate_patterns(kind: str, patterns: list[str], path: Path) -> None:

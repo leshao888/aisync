@@ -141,6 +141,7 @@ def profile_show(name: str, ui: UI) -> None:
     ui.info(f"name: {profile.name}")
     ui.info(f"schema_version: {profile.schema_version}")
     ui.info(f"stability: {profile.stability}")
+    ui.info(f"supports_restore: {str(profile.supports_restore).lower()}")
     ui.info(f"source: {profile.source_path()}")
     ui.info(f"include: {len(profile.include)} rules")
     ui.info(f"deny: {len(profile.deny)} rules")
@@ -330,6 +331,15 @@ def sync(
     profile = load_profile(profile_name)
     source = source_override or profile.source_path()
     ui.info(f"profile: {profile.name}")
+    if profile.stability == "experimental":
+        ui.warn("experimental profile: app data layout may change between releases")
+        ui.warn("review the dry-run output before every sync")
+    elif profile.stability == "research":
+        raise DangerError(
+            f"Research profile cannot sync: {profile.name}",
+            why="Research profiles are planning artifacts and have not passed the required safety review.",
+            next_action="Use a stable or experimental profile.",
+        )
     ui.info(f"source: {source}")
     if not source.exists():
         raise AisyncError(f"source directory does not exist: {source}", next_action="Install/use the app once, or pass --source for testing.")
@@ -448,8 +458,14 @@ def restore(
     pull_remote: bool = True,
     mode: str = "merge",
 ) -> None:
-    ensure_repo_layout(repo)
     profile = load_profile(profile_name)
+    if not profile.supports_restore:
+        raise RestoreError(
+            f"Restore is disabled for profile: {profile.name}",
+            why="This profile's restore layout has not been validated as safe.",
+            next_action=f"Use: aisync sync {profile.name} --dry-run; restore remains unavailable for this profile.",
+        )
+    ensure_repo_layout(repo)
     target = target_override or profile.source_path()
     if mode not in {"merge", "replace-file"}:
         raise RestoreError("Unsupported restore mode.", next_action="Use --mode merge or --mode replace-file.")

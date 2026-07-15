@@ -56,7 +56,7 @@ capabilities:
 
 - `stable`: intended for regular use
 - `experimental`: available, but layout may change
-- `research`: planning only, do not run without explicit confirmation
+- `research`: planning only; sync is blocked
 
 ## Include Rules
 
@@ -67,6 +67,10 @@ Includes are allowlist entries. A profile should include only files required to 
 Deny rules are fatal. If a denied path appears in staging, sync stops.
 
 ## Restore Rules
+
+`capabilities.supports_restore` is a runtime safety gate, not descriptive metadata. Missing capability values default to the safer `false` behavior. When restore is disabled, AIsync must stop before creating repository directories, pulling Git data, decrypting an archive, creating a backup, or writing the app directory.
+
+Capability values must be booleans. A profile cannot declare `supports_merge: true` while restore is disabled. Experimental profiles may support sync while keeping restore disabled until their app layout and restore behavior have dedicated safety tests.
 
 Initial restore modes:
 

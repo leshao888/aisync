@@ -2,9 +2,9 @@
 
 简体中文 | [English](README.md)
 
-![版本](https://img.shields.io/badge/version-0.2.0a3-0A7AFF)
+![版本](https://img.shields.io/badge/version-0.2.0a4-0A7AFF)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-3776AB)
-![Codex](https://img.shields.io/badge/profile-Codex-111827)
+![Profiles](https://img.shields.io/badge/profiles-Codex%20%7C%20Claude%20experimental-111827)
 ![加密](https://img.shields.io/badge/encryption-age-22C55E)
 ![密钥扫描](https://img.shields.io/badge/secret%20scan-gitleaks-F97316)
 ![CI](https://github.com/leshao888/aisync/actions/workflows/ci.yml/badge.svg)
@@ -12,7 +12,7 @@
 
 AIsync 用来在多台机器之间安全同步选定的本地 AI app data。
 
-第一个支持的 profile 是 `Codex`。AIsync 不会把明文聊天记录直接上传到 GitHub：它只收集 allowlist 文件，拦截危险文件，用 `gitleaks` 扫描 plaintext staging data，再用 `age` 加密 package，最后只把 encrypted vault package 存入 Git。
+第一个 stable profile 是 `Codex`，现在也提供 sync-only 的 `Claude Code` experimental profile。AIsync 不会把明文聊天记录直接上传到 GitHub：它只收集 allowlist 文件，拦截危险文件，用 `gitleaks` 扫描 plaintext staging data，再用 `age` 加密 package，最后只把 encrypted vault package 存入 Git。
 
 ## 适合谁？
 
@@ -21,7 +21,7 @@ AIsync 用来在多台机器之间安全同步选定的本地 AI app data。
 - 不依赖同一个 Codex account，也能在多台机器之间迁移 Codex sessions
 - 把 sync data 存在自己的 GitHub repository
 - 避免提交 auth files、`.env`、tokens、sqlite databases 或 private keys
-- 使用 profile-based framework，后续扩展 Claude Code、Cursor、Gemini CLI 和其他本地 AI tools
+- 使用 profile-based framework，支持 Codex、experimental Claude Code sync，并逐步扩展更多本地 AI tools
 
 ## 两个仓库
 
@@ -113,8 +113,12 @@ aisync recipient remove <age-recipient>
 aisync profile list
 aisync profile show codex
 aisync profile validate codex
+aisync profile show claude
+aisync profile validate claude
 aisync sync codex --dry-run
 aisync sync codex
+aisync sync claude --dry-run
+aisync sync claude
 aisync restore codex --dry-run
 aisync restore codex
 aisync status
@@ -138,7 +142,7 @@ OK      git push completed
 
 ## 当前状态
 
-`v0.2.0a3` 是 alpha 迭代版本。Codex 是第一个 stable profile；key、recipient、history、pull、conflict detection、更完整的 `doctor` 和更严格的 `profile` validation 已经可用于 vault operations。
+`v0.2.0a4` 是 alpha 迭代版本。Codex 是第一个 stable profile。Claude Code 现在提供 experimental sync-only profile，并由严格的 capability gate 阻止 restore，直到其 layout 和 restore behavior 通过验证。
 
 当前限制：
 
@@ -147,6 +151,7 @@ OK      git push completed
 - `sync` 默认启用 push；没有 Git remote 时会中止。
 - 如果 vault repository 是 behind、diverged 或无法 fetch remote state，`sync` 会在写入新的 encrypted package 前中止。
 - Remote privacy 需要用户手动确认。
+- `sync claude` 是 experimental，必须先使用 `--dry-run` 预览；`restore claude` 已禁用。
 - Restore 支持 `merge` 和 `replace-file`；暂不提供危险的整目录替换。
 - 当前 archive format 使用 Python 标准库的 `tar.gz`。后续可添加 `zstd`。
 

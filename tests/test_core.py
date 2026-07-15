@@ -16,7 +16,7 @@ from aisync.cli import main
 from aisync.collector import discover_files
 from aisync.errors import DangerError, ProfileError, RestoreError
 from aisync.gitstore import commit_and_push
-from aisync.profile import load_profile, validate_profile
+from aisync.profile import list_profiles, load_profile, validate_profile
 
 
 class CoreTests(unittest.TestCase):
@@ -25,6 +25,42 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(profile.name, "codex")
         self.assertIn("sessions/**", profile.include)
         self.assertIn("auth.json", profile.deny)
+        self.assertTrue(profile.supports_restore)
+
+    def test_claude_experimental_profile_loads_by_natural_name(self):
+        profile = load_profile("claude")
+        self.assertEqual(profile.name, "claude")
+        self.assertEqual(profile.stability, "experimental")
+        self.assertIn("projects/**", profile.include)
+        self.assertIn(".credentials.json", profile.deny)
+        self.assertFalse(profile.supports_restore)
+        self.assertIn("claude", list_profiles())
+        self.assertNotIn("claude.experimental", list_profiles())
+
+    def test_discover_claude_allowlist_excludes_credentials_and_cache(self):
+        profile = load_profile("claude")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "projects" / "example").mkdir(parents=True)
+            (root / "projects" / "example" / "session.jsonl").write_text("{}\n", encoding="utf-8")
+            (root / "history.jsonl").write_text("{}\n", encoding="utf-8")
+            (root / ".credentials.json").write_text("secret\n", encoding="utf-8")
+            (root / "cache").mkdir()
+            (root / "cache" / "state.json").write_text("{}\n", encoding="utf-8")
+            files = discover_files(profile, root)
+        self.assertEqual(
+            [item.rel for item in files],
+            ["history.jsonl", "projects/example/session.jsonl"],
+        )
+
+    def test_claude_deny_file_inside_include_stops(self):
+        profile = load_profile("claude")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "projects" / "example").mkdir(parents=True)
+            (root / "projects" / "example" / ".env").write_text("TOKEN=secret\n", encoding="utf-8")
+            with self.assertRaises(DangerError):
+                discover_files(profile, root)
 
     def test_discover_codex_allowlist(self):
         profile = load_profile("codex")
@@ -60,6 +96,32 @@ class CoreTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertFalse(repo.exists())
             self.assertIn("dry-run", out.getvalue())
+
+    def test_claude_sync_dry_run_warns_experimental_without_creating_repo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            source = tmp_path / "source"
+            repo = tmp_path / "repo"
+            (source / "projects" / "example").mkdir(parents=True)
+            (source / "projects" / "example" / "session.jsonl").write_text("{}\n", encoding="utf-8")
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = main(["--repo", str(repo), "sync", "claude", "--dry-run", "--source", str(source)])
+            self.assertEqual(code, 0)
+            self.assertFalse(repo.exists())
+            self.assertIn("WARN    experimental profile", out.getvalue())
+
+    def test_claude_restore_is_blocked_before_repo_creation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            target = Path(tmp) / "target"
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = main(["--repo", str(repo), "restore", "claude", "--dry-run", "--target", str(target)])
+            self.assertEqual(code, 1)
+            self.assertFalse(repo.exists())
+            self.assertFalse(target.exists())
+            self.assertIn("Restore is disabled for profile: claude", out.getvalue())
 
     def test_recipient_add_list_remove_and_refuse_last_remove(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -183,6 +245,34 @@ class CoreTests(unittest.TestCase):
                 "include": ["sessions/**"],
                 "deny": [],
                 "process_names": "Codex",
+            }
+            with self.assertRaises(ProfileError):
+                validate_profile(raw, path)
+
+    def test_profile_validation_rejects_non_boolean_capability(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.yaml"
+            raw = {
+                "schema_version": 1,
+                "name": "bad",
+                "source": {"macos": "~/.bad"},
+                "include": ["sessions/**"],
+                "deny": [],
+                "capabilities": {"supports_restore": "yes"},
+            }
+            with self.assertRaises(ProfileError):
+                validate_profile(raw, path)
+
+    def test_profile_validation_rejects_merge_when_restore_disabled(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.yaml"
+            raw = {
+                "schema_version": 1,
+                "name": "bad",
+                "source": {"macos": "~/.bad"},
+                "include": ["sessions/**"],
+                "deny": [],
+                "capabilities": {"supports_restore": False, "supports_merge": True},
             }
             with self.assertRaises(ProfileError):
                 validate_profile(raw, path)

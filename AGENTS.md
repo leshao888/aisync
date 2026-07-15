@@ -23,7 +23,7 @@ This repository is in `v0.2` alpha development. The user explicitly approved sta
 Allowed work now:
 
 - Python CLI implementation and alpha iteration
-- Codex profile implementation
+- Codex and Claude Code experimental profile implementation
 - Local fake-data tests
 - Documentation updates
 - Safety checks and restore logic
@@ -31,7 +31,7 @@ Allowed work now:
 Avoid unless the user explicitly asks:
 
 - Touching real Codex or Claude data
-- Running real sync or restore operations against `~/.codex`
+- Running real sync or restore operations against `~/.codex` or `~/.claude`
 - Creating or pushing to remote GitHub repositories
 - Weakening encryption, scanning, or denied-file behavior
 
@@ -129,8 +129,12 @@ aisync doctor
 aisync profile list
 aisync profile show codex
 aisync profile validate codex
+aisync profile show claude
+aisync profile validate claude
 aisync sync codex --dry-run
 aisync sync codex
+aisync sync claude --dry-run
+aisync sync claude
 aisync restore codex --dry-run
 aisync restore codex
 aisync status
@@ -193,15 +197,24 @@ aisync doctor
 aisync pull
 aisync conflicts
 aisync keygen
+aisync key list
+aisync recipient list
+aisync recipient add <age-recipient>
+aisync recipient remove <age-recipient>
 aisync profile list
 aisync profile show codex
 aisync profile validate codex
+aisync profile show claude
+aisync profile validate claude
 aisync sync codex --dry-run
 aisync sync codex
+aisync sync claude --dry-run
+aisync sync claude
 aisync restore codex --dry-run
 aisync restore codex
 aisync status
 aisync logs
+aisync history codex
 ```
 
 ## References

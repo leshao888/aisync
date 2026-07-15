@@ -44,7 +44,7 @@ You cannot decrypt old vault packages unless another recipient can decrypt them.
 
 ## Can AIsync sync Claude Code or Cursor?
 
-Not yet as a stable profile. The architecture is profile-based, so future versions can add Claude Code, Cursor, Gemini CLI, and other local AI tools.
+Claude Code has an experimental sync-only profile. Run `aisync profile show claude` and `aisync sync claude --dry-run` before a real sync. Restore is disabled because the Claude Code data layout and restore behavior are not yet validated. Cursor and other profiles remain planned.
 
 ## Can multiple machines sync at the same time?
 

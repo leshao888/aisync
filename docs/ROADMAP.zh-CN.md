@@ -54,11 +54,13 @@
 - sync 写入新的 vault package 前进行 conflict detection
 - symlink policy
 - app-running warnings
+- Claude Code experimental sync-only profile
+- capability-gated restore behavior
+- Claude allowlist 和 denied-file boundary tests
 
 新增：
 
 - Linux support
-- Claude Code experimental profile
 - installation through `pipx`
 - dangerous scenarios 的 tests
 

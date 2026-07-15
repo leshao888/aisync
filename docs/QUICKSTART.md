@@ -45,7 +45,7 @@ PYTHONPATH=src python3 -m aisync --version
 You should see:
 
 ```text
-aisync 0.2.0a3
+aisync 0.2.0a4
 ```
 
 ## 3. Create A Private Vault Repository
@@ -124,7 +124,18 @@ Successful sync should:
 - write `manifests/*.json`
 - commit and push encrypted data to `aisync-vault`
 
-## 7. Daily Usage
+## 7. Optional: Preview Claude Code Sync
+
+Claude Code support is experimental and sync-only. Always inspect the profile and preview before a real sync:
+
+```bash
+PYTHONPATH=src python3 -m aisync profile show claude
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync claude --dry-run
+```
+
+The profile includes selected project sessions, history, `CLAUDE.md`, commands, agents, and skills. Credentials, `.env` files, databases, private keys, and token-like files are denied. `restore claude` is intentionally disabled.
+
+## 8. Daily Usage
 
 ```bash
 cd ~/Developer/projects/aisync
@@ -136,7 +147,7 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync c
 
 `conflicts` should report `synced`, `ahead`, or `no-upstream` before you sync. If it reports `behind`, run `pull`; if it reports `diverged`, `dirty`, or `fetch-failed`, inspect the vault repository first.
 
-## 8. Verify The Vault
+## 9. Verify The Vault
 
 ```bash
 cd ~/Developer/projects/aisync-vault

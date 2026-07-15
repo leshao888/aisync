@@ -54,11 +54,13 @@ Current alpha progress:
 - conflict detection before sync writes a new vault package
 - symlink policy
 - app-running warnings
+- Claude Code experimental sync-only profile
+- capability-gated restore behavior
+- Claude allowlist and denied-file boundary tests
 
 Add:
 
 - Linux support
-- Claude Code experimental profile
 - installation through `pipx`
 - tests for dangerous scenarios
 

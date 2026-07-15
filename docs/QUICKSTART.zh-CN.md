@@ -45,7 +45,7 @@ PYTHONPATH=src python3 -m aisync --version
 你应该看到：
 
 ```text
-aisync 0.2.0a3
+aisync 0.2.0a4
 ```
 
 ## 3. 创建 private vault repository
@@ -124,7 +124,18 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync c
 - 写入 `manifests/*.json`
 - commit 并 push encrypted data 到 `aisync-vault`
 
-## 7. 日常使用
+## 7. 可选：预览 Claude Code sync
+
+Claude Code support 目前是 experimental 且仅支持 sync。执行真实 sync 前必须检查 profile 并预览：
+
+```bash
+PYTHONPATH=src python3 -m aisync profile show claude
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync claude --dry-run
+```
+
+该 profile 只 include 选定的 project sessions、history、`CLAUDE.md`、commands、agents 和 skills。Credentials、`.env` files、databases、private keys 和 token-like files 会被 deny。`restore claude` 被有意禁用。
+
+## 8. 日常使用
 
 ```bash
 cd ~/Developer/projects/aisync
@@ -136,7 +147,7 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync c
 
 `conflicts` 在 sync 前应显示 `synced`、`ahead` 或 `no-upstream`。如果显示 `behind`，先运行 `pull`；如果显示 `diverged`、`dirty` 或 `fetch-failed`，请先检查 vault repository。
 
-## 8. 检查 vault
+## 9. 检查 vault
 
 ```bash
 cd ~/Developer/projects/aisync-vault
