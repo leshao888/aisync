@@ -26,6 +26,18 @@
 
 可以，只要每台机器都能访问 Git repository，并且拥有可以 decrypt packages 的 age identity。
 
+查看当前 recipients：
+
+```bash
+aisync --repo ~/Developer/projects/aisync-vault recipient list
+```
+
+添加另一个 recipient：
+
+```bash
+aisync --repo ~/Developer/projects/aisync-vault recipient add <age-recipient>
+```
+
 ## 如果 age private key 丢了怎么办？
 
 除非还有其他 recipient 可以 decrypt，否则你无法解密旧 vault packages。请单独备份 age private key。
@@ -50,3 +62,10 @@ v0.1 没有完整自动化处理这个场景。建议 sync 前先 `git pull --ff
 
 Logs 存在 vault repository 的 `logs/` 下。Logs 不应包含 chat snippets、file contents、tokens 或 secrets。
 
+## 如何查看之前的 sync packages？
+
+使用：
+
+```bash
+aisync --repo ~/Developer/projects/aisync-vault history codex
+```

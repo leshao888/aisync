@@ -45,7 +45,7 @@ PYTHONPATH=src python3 -m aisync --version
 You should see:
 
 ```text
-aisync 0.1.0
+aisync 0.2.0a1
 ```
 
 ## 3. Create A Private Vault Repository
@@ -74,11 +74,19 @@ cd ~/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault init
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault keygen
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault doctor
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault key list
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault recipient list
 ```
 
 `keygen` creates a local age private key and adds its public recipient to `recipients.txt`.
 
 Back up the age private key separately. Without it, another machine cannot decrypt the vault.
+
+To add another machine or public recipient later:
+
+```bash
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault recipient add <age-recipient>
+```
 
 ## 5. Preview Codex Sync
 
@@ -130,6 +138,7 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync c
 cd ~/Developer/projects/aisync-vault
 git status --short
 find vault manifests -maxdepth 2 -type f | sort
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault history codex
 ```
 
 The vault should contain encrypted packages and manifests. It should not contain:
@@ -147,4 +156,3 @@ plaintext sessions outside encrypted packages
 
 - Read [Recovery](RECOVERY.md) before restoring on another machine.
 - Read [FAQ](FAQ.md) for common safety questions.
-

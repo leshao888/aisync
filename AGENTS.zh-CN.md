@@ -135,6 +135,11 @@ aisync restore codex --dry-run
 aisync restore codex
 aisync status
 aisync logs
+aisync key list
+aisync recipient list
+aisync recipient add <age-recipient>
+aisync recipient remove <age-recipient>
+aisync history codex
 ```
 
 Later commands：
@@ -208,4 +213,3 @@ Project planning documents 位于 `docs/`。
 - `docs/WORKFLOW.md`
 - `docs/TESTING.md`
 - `CONTRIBUTING.md`
-

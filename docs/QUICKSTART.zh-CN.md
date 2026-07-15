@@ -45,7 +45,7 @@ PYTHONPATH=src python3 -m aisync --version
 你应该看到：
 
 ```text
-aisync 0.1.0
+aisync 0.2.0a1
 ```
 
 ## 3. 创建 private vault repository
@@ -74,11 +74,19 @@ cd ~/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault init
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault keygen
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault doctor
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault key list
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault recipient list
 ```
 
 `keygen` 会创建 local age private key，并把对应 public recipient 加入 `recipients.txt`。
 
 请单独备份 age private key。没有它，另一台机器无法 decrypt vault。
+
+以后添加另一台机器或 public recipient：
+
+```bash
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault recipient add <age-recipient>
+```
 
 ## 5. 预览 Codex sync
 
@@ -130,6 +138,7 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync c
 cd ~/Developer/projects/aisync-vault
 git status --short
 find vault manifests -maxdepth 2 -type f | sort
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault history codex
 ```
 
 Vault 应只包含 encrypted packages 和 manifests，不应包含：
@@ -147,4 +156,3 @@ plaintext sessions outside encrypted packages
 
 - 在另一台机器 restore 前先阅读 [Recovery](RECOVERY.zh-CN.md)。
 - 常见安全问题见 [FAQ](FAQ.zh-CN.md)。
-

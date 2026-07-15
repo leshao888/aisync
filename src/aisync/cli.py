@@ -7,12 +7,17 @@ from . import __version__
 from .errors import AisyncError
 from .operations import (
     doctor,
+    history,
     init,
+    key_list,
     keygen,
     logs,
     profile_list,
     profile_show,
     profile_validate,
+    recipient_add,
+    recipient_list,
+    recipient_remove,
     restore,
     status,
     sync,
@@ -36,6 +41,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     keygen_cmd = sub.add_parser("keygen", help="Generate a local age key and add its public recipient")
     keygen_cmd.add_argument("--force", action="store_true", help="Overwrite the local age identity")
+
+    key_cmd = sub.add_parser("key", help="Manage local age keys")
+    key_sub = key_cmd.add_subparsers(dest="key_command", required=True)
+    key_sub.add_parser("list", help="Show local age identity status")
+
+    recipient_cmd = sub.add_parser("recipient", help="Manage vault age recipients")
+    recipient_sub = recipient_cmd.add_subparsers(dest="recipient_command", required=True)
+    recipient_sub.add_parser("list", help="List configured age recipients")
+    recipient_add_cmd = recipient_sub.add_parser("add", help="Add an age recipient")
+    recipient_add_cmd.add_argument("recipient")
+    recipient_remove_cmd = recipient_sub.add_parser("remove", help="Remove an age recipient")
+    recipient_remove_cmd.add_argument("recipient")
 
     profile_cmd = sub.add_parser("profile", help="Manage app profiles")
     profile_sub = profile_cmd.add_subparsers(dest="profile_command", required=True)
@@ -62,6 +79,10 @@ def build_parser() -> argparse.ArgumentParser:
     logs_cmd = sub.add_parser("logs", help="Show privacy-safe logs")
     logs_cmd.add_argument("--last", type=int, default=20)
 
+    history_cmd = sub.add_parser("history", help="Show sync manifest history")
+    history_cmd.add_argument("profile", nargs="?", help="Optional profile name, for example codex")
+    history_cmd.add_argument("--limit", type=int, default=10)
+
     return parser
 
 
@@ -78,6 +99,16 @@ def main(argv: list[str] | None = None) -> int:
             return doctor(repo, ui)
         elif args.command == "keygen":
             keygen(repo, ui, force=args.force)
+        elif args.command == "key":
+            if args.key_command == "list":
+                key_list(ui)
+        elif args.command == "recipient":
+            if args.recipient_command == "list":
+                recipient_list(repo, ui)
+            elif args.recipient_command == "add":
+                recipient_add(repo, ui, args.recipient)
+            elif args.recipient_command == "remove":
+                recipient_remove(repo, ui, args.recipient)
         elif args.command == "profile":
             if args.profile_command == "list":
                 profile_list(ui)
@@ -95,8 +126,9 @@ def main(argv: list[str] | None = None) -> int:
             status(repo, ui)
         elif args.command == "logs":
             logs(repo, ui, last=args.last)
+        elif args.command == "history":
+            history(repo, args.profile, ui, limit=args.limit)
         return 0
     except AisyncError as exc:
         print_error(ui, exc)
         return 2 if getattr(exc, "level", "") == "DANGER" else 1
-

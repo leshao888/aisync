@@ -12,6 +12,47 @@ def recipients_path(repo: Path) -> Path:
     return repo / "recipients.txt"
 
 
+def parse_recipients(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    recipients = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith("#"):
+            recipients.append(line)
+    return recipients
+
+
+def write_recipients(repo: Path, recipients: list[str]) -> None:
+    path = recipients_path(repo)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    body = [
+        "# Add age public recipients here, one per line.",
+        "# Native age recipients start with age1.",
+        "# SSH public key recipients may start with ssh-ed25519 or ssh-rsa.",
+        "",
+    ]
+    body.extend(dict.fromkeys(recipients))
+    path.write_text("\n".join(body).rstrip() + "\n", encoding="utf-8")
+
+
+def validate_recipient(recipient: str) -> str:
+    recipient = recipient.strip()
+    if not recipient:
+        raise DangerError(
+            "Empty age recipient.",
+            why="An empty recipient would make encryption configuration ambiguous.",
+            next_action="Use a valid age recipient, for example one starting with age1.",
+        )
+    if recipient.startswith(("age1", "ssh-ed25519 ", "ssh-rsa ")):
+        return recipient
+    raise DangerError(
+        "Unsupported age recipient format.",
+        why="AIsync v0.2 accepts native age recipients and SSH public key recipients.",
+        next_action="Use an age recipient starting with age1, or an SSH public key starting with ssh-ed25519 or ssh-rsa.",
+    )
+
+
 def read_recipients(repo: Path) -> list[str]:
     path = recipients_path(repo)
     if not path.exists():
@@ -20,11 +61,7 @@ def read_recipients(repo: Path) -> list[str]:
             why="AIsync will not create a remote package that nobody can decrypt.",
             next_action="Add a public age recipient to recipients.txt or run aisync keygen.",
         )
-    recipients = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if line and not line.startswith("#"):
-            recipients.append(line)
+    recipients = parse_recipients(path)
     if not recipients:
         raise DangerError(
             "recipients.txt is empty.",
@@ -77,4 +114,3 @@ def decrypt_file(input_path: Path, output_path: Path, identity: Path | None = No
             why=result.stderr.strip()[:1200] or result.stdout.strip()[:1200],
             next_action="Check that this machine has the matching age private key.",
         )
-

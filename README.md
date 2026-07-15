@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) | English
 
-![Version](https://img.shields.io/badge/version-0.1.0-0A7AFF)
+![Version](https://img.shields.io/badge/version-0.2.0a1-0A7AFF)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-3776AB)
 ![Profile](https://img.shields.io/badge/profile-Codex-111827)
 ![Encryption](https://img.shields.io/badge/encryption-age-22C55E)
@@ -75,6 +75,7 @@ cd ~/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault init
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault keygen
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault doctor
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault recipient list
 ```
 
 Preview and run Codex sync:
@@ -103,6 +104,10 @@ Restore creates a backup before writing. Read the full recovery guide: [Recovery
 aisync init
 aisync doctor
 aisync keygen
+aisync key list
+aisync recipient list
+aisync recipient add <age-recipient>
+aisync recipient remove <age-recipient>
 aisync profile list
 aisync profile show codex
 aisync profile validate codex
@@ -112,6 +117,7 @@ aisync restore codex --dry-run
 aisync restore codex
 aisync status
 aisync logs
+aisync history codex
 ```
 
 ## Expected Output
@@ -130,7 +136,7 @@ OK      git push completed
 
 ## Current Status
 
-`v0.1` is under development. Codex is the first stable profile.
+`v0.2.0a1` is an alpha iteration. Codex is the first stable profile; key, recipient, and history management commands are available for vault operations.
 
 Current limitations:
 

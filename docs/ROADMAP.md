@@ -40,6 +40,14 @@ Non-goals:
 
 Goal: make the tool safe for other developers to try.
 
+Current alpha progress:
+
+- `aisync key list`
+- `aisync recipient list`
+- `aisync recipient add`
+- `aisync recipient remove`
+- `aisync history <profile>`
+
 Add:
 
 - Linux support
@@ -49,10 +57,6 @@ Add:
 - app-running warnings
 - conflict detection
 - richer `doctor`
-- `aisync key list`
-- `aisync recipient add`
-- `aisync recipient remove`
-- `aisync history <profile>`
 - installation through `pipx`
 - tests for dangerous scenarios
 

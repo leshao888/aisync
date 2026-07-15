@@ -26,6 +26,18 @@ Yes. The `aisync` source repository can be public. Personal data should go into 
 
 Yes, if every machine has access to the Git repository and has an age identity that can decrypt the packages.
 
+Use this to inspect configured recipients:
+
+```bash
+aisync --repo ~/Developer/projects/aisync-vault recipient list
+```
+
+Use this to add another recipient:
+
+```bash
+aisync --repo ~/Developer/projects/aisync-vault recipient add <age-recipient>
+```
+
 ## What happens if I lose the age private key?
 
 You cannot decrypt old vault packages unless another recipient can decrypt them. Back up the age private key separately.
@@ -50,3 +62,10 @@ Restoring while Codex is writing can race with app writes and corrupt local stat
 
 Logs are stored in the vault repository under `logs/`. Logs should not include chat snippets, file contents, tokens, or secrets.
 
+## How do I see previous sync packages?
+
+Use:
+
+```bash
+aisync --repo ~/Developer/projects/aisync-vault history codex
+```

@@ -10,7 +10,16 @@ from pathlib import Path
 from . import __version__
 from .archive import create_tar_gz, safe_extract_tar_gz
 from .collector import CollectedFile, collect, discover_files
-from .crypto import decrypt_file, default_identity_path, encrypt_file, read_recipients, recipients_path
+from .crypto import (
+    decrypt_file,
+    default_identity_path,
+    encrypt_file,
+    parse_recipients,
+    read_recipients,
+    recipients_path,
+    validate_recipient,
+    write_recipients,
+)
 from .deps import check_required, require_tool, run
 from .errors import AisyncError, DangerError, RestoreError
 from .gitstore import commit_and_push, init_repo, pull, require_git_repository, require_remote
@@ -160,6 +169,70 @@ def keygen(repo: Path, ui: UI, *, force: bool = False) -> None:
     ui.ok(f"created local age identity: {identity}")
     ui.ok("added public recipient to recipients.txt")
     ui.warn("Back up the age identity separately. It is not stored in the sync repository.")
+
+
+def key_list(ui: UI) -> None:
+    identity = default_identity_path()
+    ui.info(f"age identity: {identity}")
+    if not identity.exists():
+        ui.warn("age identity: missing")
+        ui.next("Run: aisync keygen")
+        return
+    ui.ok("age identity: present")
+    public_key = None
+    for line in identity.read_text(encoding="utf-8").splitlines():
+        if line.lower().startswith("# public key:"):
+            public_key = line.split(":", 1)[1].strip()
+            break
+    if public_key:
+        ui.info(f"public recipient: {public_key}")
+    else:
+        ui.warn("public recipient not found in identity comment")
+
+
+def recipient_list(repo: Path, ui: UI) -> None:
+    path = recipients_path(repo)
+    recipients = parse_recipients(path)
+    ui.info(f"recipients file: {path}")
+    if not recipients:
+        ui.warn("no age recipients configured")
+        ui.next("Run: aisync recipient add <age-recipient>")
+        return
+    for index, recipient in enumerate(recipients, start=1):
+        ui.ok(f"{index}. {recipient}")
+
+
+def recipient_add(repo: Path, ui: UI, recipient: str) -> None:
+    recipient = validate_recipient(recipient)
+    ensure_repo_layout(repo)
+    recipients = parse_recipients(recipients_path(repo))
+    if recipient in recipients:
+        ui.warn("recipient already exists")
+        return
+    recipients.append(recipient)
+    write_recipients(repo, recipients)
+    ui.ok("recipient added")
+    ui.warn("Commit and push recipients.txt so other machines can encrypt to the same vault.")
+
+
+def recipient_remove(repo: Path, ui: UI, recipient: str) -> None:
+    path = recipients_path(repo)
+    recipients = parse_recipients(path)
+    if recipient not in recipients:
+        raise AisyncError(
+            "Recipient not found.",
+            next_action="Run: aisync recipient list",
+        )
+    remaining = [item for item in recipients if item != recipient]
+    if not remaining:
+        raise DangerError(
+            "Refusing to remove the last recipient.",
+            why="A vault with no recipients cannot be encrypted for future syncs.",
+            next_action="Add another recipient first, then remove this one.",
+        )
+    write_recipients(repo, remaining)
+    ui.ok("recipient removed")
+    ui.warn("Commit and push recipients.txt after confirming all machines still have decrypt access.")
 
 
 def _timestamp() -> str:
@@ -385,3 +458,28 @@ def logs(repo: Path, ui: UI, *, last: int = 20) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()[-last:]
     for line in lines:
         print(line)
+
+
+def history(repo: Path, profile_name: str | None, ui: UI, *, limit: int = 10) -> None:
+    manifests_dir = repo / "manifests"
+    if not manifests_dir.exists():
+        ui.warn("no manifests directory")
+        ui.next("Run sync first.")
+        return
+    pattern = f"{profile_name}-*.json" if profile_name else "*.json"
+    manifests = sorted(manifests_dir.glob(pattern), reverse=True)
+    if not manifests:
+        ui.warn("no sync history found")
+        return
+    for path in manifests[:limit]:
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            ui.warn(f"{path.name}: invalid manifest json")
+            continue
+        profile = data.get("profile", "unknown")
+        created_at = data.get("created_at", "unknown-time")
+        files = data.get("files", "?")
+        bytes_count = data.get("bytes", "?")
+        archive = data.get("archive", "unknown-archive")
+        ui.ok(f"{created_at}  profile={profile}  files={files}  bytes={bytes_count}  archive={archive}")

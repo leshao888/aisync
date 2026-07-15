@@ -60,6 +60,66 @@ class CoreTests(unittest.TestCase):
             self.assertFalse(repo.exists())
             self.assertIn("dry-run", out.getvalue())
 
+    def test_recipient_add_list_remove_and_refuse_last_remove(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            recipient_one = "age1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
+            recipient_two = "age1lllllllllllllllllllllllllllllllllllllllllllllllllllllllllll"
+
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["--repo", str(repo), "init", "--no-git"]), 0)
+                self.assertEqual(main(["--repo", str(repo), "recipient", "add", recipient_one]), 0)
+                self.assertEqual(main(["--repo", str(repo), "recipient", "add", recipient_two]), 0)
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                self.assertEqual(main(["--repo", str(repo), "recipient", "list"]), 0)
+            self.assertIn(recipient_one, out.getvalue())
+            self.assertIn(recipient_two, out.getvalue())
+
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["--repo", str(repo), "recipient", "remove", recipient_one]), 0)
+            with redirect_stdout(io.StringIO()):
+                code = main(["--repo", str(repo), "recipient", "remove", recipient_two])
+            self.assertEqual(code, 2)
+
+    def test_recipient_add_rejects_invalid_format(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            with redirect_stdout(io.StringIO()):
+                code = main(["--repo", str(repo), "recipient", "add", "not-a-recipient"])
+            self.assertEqual(code, 2)
+            self.assertFalse(repo.exists())
+
+    def test_history_reads_manifests_without_file_contents(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            manifests = repo / "manifests"
+            manifests.mkdir(parents=True)
+            (manifests / "codex-20260715-120000.json").write_text(
+                '{"profile":"codex","created_at":"2026-07-15T12:00:00Z","files":2,"bytes":10,"archive":"vault/codex.age"}\n',
+                encoding="utf-8",
+            )
+            out = io.StringIO()
+            with redirect_stdout(out):
+                self.assertEqual(main(["--repo", str(repo), "history", "codex"]), 0)
+            value = out.getvalue()
+            self.assertIn("profile=codex", value)
+            self.assertIn("archive=vault/codex.age", value)
+            self.assertNotIn("msg", value)
+
+    def test_key_list_does_not_print_private_key_material(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            identity = Path(tmp) / "identity.txt"
+            identity.write_text("# public key: age1fake\nFAKE-PRIVATE-KEY\n", encoding="utf-8")
+            with mock.patch.dict(os.environ, {"AISYNC_AGE_IDENTITY": str(identity)}, clear=False):
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    self.assertEqual(main(["key", "list"]), 0)
+            value = out.getvalue()
+            self.assertIn("age1fake", value)
+            self.assertNotIn("FAKE-PRIVATE-KEY", value)
+
     def test_safe_extract_rejects_path_traversal(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)

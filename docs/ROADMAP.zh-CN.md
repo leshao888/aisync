@@ -40,6 +40,14 @@
 
 目标：让其他 developer 可以更安全地试用。
 
+当前 alpha 进度：
+
+- `aisync key list`
+- `aisync recipient list`
+- `aisync recipient add`
+- `aisync recipient remove`
+- `aisync history <profile>`
+
 新增：
 
 - Linux support
@@ -49,10 +57,6 @@
 - app-running warnings
 - conflict detection
 - richer `doctor`
-- `aisync key list`
-- `aisync recipient add`
-- `aisync recipient remove`
-- `aisync history <profile>`
 - installation through `pipx`
 - dangerous scenarios 的 tests
 
@@ -84,4 +88,3 @@
 - migration policy
 - backward-compatible manifests where practical
 - unsafe profile fields 的 clear deprecation policy
-
