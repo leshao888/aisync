@@ -1,0 +1,25 @@
+# Runtime and local state
+.aisync-state.json
+.aisync.lock
+logs/
+staging/
+tmp/
+
+# Vault data belongs to user sync repositories, not the tool source repo.
+vault/
+manifests/
+
+# Secrets and keys
+keys/
+*.key
+*.agekey
+.env
+
+# Python/build artifacts for later implementation
+__pycache__/
+.pytest_cache/
+.venv/
+dist/
+build/
+*.egg-info/
+

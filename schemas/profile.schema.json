@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIsync profile",
+  "type": "object",
+  "required": ["schema_version", "name", "source", "include", "deny"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "name": { "type": "string" },
+    "stability": { "enum": ["stable", "experimental", "research"] },
+    "source": {
+      "type": "object",
+      "properties": {
+        "macos": { "type": "string" },
+        "linux": { "type": "string" },
+        "windows": { "type": "string" }
+      }
+    },
+    "include": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "deny": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "process_names": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
