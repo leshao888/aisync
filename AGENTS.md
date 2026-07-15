@@ -151,6 +151,7 @@ aisync recipient add
 aisync recipient remove
 aisync history codex
 aisync pull
+aisync conflicts
 aisync unlock --stale
 ```
 
@@ -190,6 +191,7 @@ Implemented commands currently include:
 aisync init
 aisync doctor
 aisync pull
+aisync conflicts
 aisync keygen
 aisync profile list
 aisync profile show codex

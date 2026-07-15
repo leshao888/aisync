@@ -48,7 +48,7 @@ aisync --repo ~/Developer/projects/aisync-vault recipient add <age-recipient>
 
 ## 多台机器可以同时 sync 吗？
 
-建议 sync 前先运行 `aisync pull`，并避免同时写入。Automatic conflict merge 是未来功能。
+建议 sync 前先运行 `aisync pull` 和 `aisync conflicts`，并避免同时写入。Automatic conflict merge 是未来功能。
 
 ## Restore 会覆盖我当前的 Codex data 吗？
 
@@ -79,3 +79,13 @@ aisync --repo ~/Developer/projects/aisync-vault pull
 ```
 
 它会运行 `git pull --ff-only`，如果 vault 出现分叉会停止。
+
+## 如何检查 vault 是否有 Git conflicts？
+
+使用：
+
+```bash
+aisync --repo ~/Developer/projects/aisync-vault conflicts
+```
+
+安全状态是 `synced`、`ahead` 和 `no-upstream`。`behind`、`diverged`、`dirty` 或 `fetch-failed` 都需要先处理再 sync。

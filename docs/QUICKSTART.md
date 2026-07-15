@@ -45,7 +45,7 @@ PYTHONPATH=src python3 -m aisync --version
 You should see:
 
 ```text
-aisync 0.2.0a2
+aisync 0.2.0a3
 ```
 
 ## 3. Create A Private Vault Repository
@@ -129,9 +129,12 @@ Successful sync should:
 ```bash
 cd ~/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault pull
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault conflicts
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex
 ```
+
+`conflicts` should report `synced`, `ahead`, or `no-upstream` before you sync. If it reports `behind`, run `pull`; if it reports `diverged`, `dirty`, or `fetch-failed`, inspect the vault repository first.
 
 ## 8. Verify The Vault
 

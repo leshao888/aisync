@@ -15,6 +15,7 @@ from aisync.archive import safe_extract_tar_gz
 from aisync.cli import main
 from aisync.collector import discover_files
 from aisync.errors import DangerError, ProfileError, RestoreError
+from aisync.gitstore import commit_and_push
 from aisync.profile import load_profile, validate_profile
 
 
@@ -193,6 +194,146 @@ class CoreTests(unittest.TestCase):
                 code = main(["--repo", str(repo), "pull"])
             self.assertEqual(code, 1)
 
+    def test_conflicts_reports_synced_repository(self):
+        if not shutil.which("git"):
+            self.skipTest("git is required for conflict tests")
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            origin = tmp_path / "origin.git"
+            repo = tmp_path / "repo"
+            self._git(tmp_path, "init", "--bare", str(origin))
+            self._init_git_repo(repo)
+            self._git(repo, "remote", "add", "origin", str(origin))
+            self._commit_file(repo, "README.md", "initial\n", "initial")
+            self._git(repo, "push", "-u", "origin", "main")
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = main(["--repo", str(repo), "conflicts"])
+            self.assertEqual(code, 0)
+            self.assertIn("state: synced", out.getvalue())
+
+    def test_conflicts_reports_diverged_repository(self):
+        if not shutil.which("git"):
+            self.skipTest("git is required for conflict tests")
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            origin = tmp_path / "origin.git"
+            repo = tmp_path / "repo"
+            other = tmp_path / "other"
+            self._git(tmp_path, "init", "--bare", str(origin))
+            self._init_git_repo(repo)
+            self._git(repo, "remote", "add", "origin", str(origin))
+            self._commit_file(repo, "README.md", "initial\n", "initial")
+            self._git(repo, "push", "-u", "origin", "main")
+            self._git(origin, "symbolic-ref", "HEAD", "refs/heads/main")
+
+            self._git(tmp_path, "clone", str(origin), str(other))
+            self._configure_git(other)
+            self._commit_file(other, "remote.txt", "remote private text\n", "remote")
+            self._git(other, "push", "origin", "main")
+            self._commit_file(repo, "local.txt", "local private text\n", "local")
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = main(["--repo", str(repo), "conflicts"])
+            value = out.getvalue()
+            self.assertEqual(code, 1)
+            self.assertIn("state: diverged", value)
+            self.assertNotIn("remote private text", value)
+            self.assertNotIn("local private text", value)
+
+    def test_commit_and_push_sets_upstream_on_first_push(self):
+        if not shutil.which("git"):
+            self.skipTest("git is required for push tests")
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            origin = tmp_path / "origin.git"
+            repo = tmp_path / "repo"
+            self._git(tmp_path, "init", "--bare", str(origin))
+            self._init_git_repo(repo)
+            self._git(repo, "remote", "add", "origin", str(origin))
+            for name in ["vault", "manifests", "profiles"]:
+                (repo / name).mkdir()
+            (repo / "vault" / "codex.age").write_text("encrypted\n", encoding="utf-8")
+            (repo / "manifests" / "codex.json").write_text("{}\n", encoding="utf-8")
+            (repo / "profiles" / "codex.yaml").write_text("name: codex\n", encoding="utf-8")
+            (repo / "recipients.txt").write_text("age1fake\n", encoding="utf-8")
+            (repo / ".gitignore").write_text("tmp/\n", encoding="utf-8")
+
+            commit = commit_and_push(repo, "initial vault", push=True)
+            upstream = self._git(repo, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}").stdout.strip()
+            self.assertIsNotNone(commit)
+            self.assertEqual(upstream, "origin/main")
+
+    def test_sync_stops_before_writing_when_vault_repo_diverged(self):
+        if not shutil.which("git"):
+            self.skipTest("git is required for conflict tests")
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            origin = tmp_path / "origin.git"
+            repo = tmp_path / "repo"
+            other = tmp_path / "other"
+            source = tmp_path / "source"
+            (source / "sessions").mkdir(parents=True)
+            (source / "sessions" / "one.jsonl").write_text("{}\n", encoding="utf-8")
+
+            self._git(tmp_path, "init", "--bare", str(origin))
+            self._init_git_repo(repo)
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["--repo", str(repo), "init", "--no-git"]), 0)
+            self._git(repo, "remote", "add", "origin", str(origin))
+            self._git(repo, "add", ".gitignore", "profiles", "recipients.txt")
+            self._git(repo, "commit", "-m", "initial vault")
+            self._git(repo, "push", "-u", "origin", "main")
+            self._git(origin, "symbolic-ref", "HEAD", "refs/heads/main")
+
+            self._git(tmp_path, "clone", str(origin), str(other))
+            self._configure_git(other)
+            self._commit_file(other, "remote.txt", "remote private text\n", "remote")
+            self._git(other, "push", "origin", "main")
+            self._commit_file(repo, "local.txt", "local private text\n", "local")
+
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = main(["--repo", str(repo), "sync", "codex", "--source", str(source)])
+            value = out.getvalue()
+            self.assertEqual(code, 1)
+            self.assertIn("Vault repository conflict detected: diverged", value)
+            self.assertEqual(list((repo / "vault").glob("codex-*.age")), [])
+            self.assertNotIn("remote private text", value)
+            self.assertNotIn("local private text", value)
+
+    def test_first_sync_push_allows_dirty_layout_without_upstream(self):
+        if not shutil.which("git"):
+            self.skipTest("git is required for first push tests")
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            fake_bin = tmp_path / "bin"
+            fake_bin.mkdir()
+            self._write_fake_tools(fake_bin)
+            origin = tmp_path / "origin.git"
+            repo = tmp_path / "repo"
+            source = tmp_path / "source"
+            (source / "sessions").mkdir(parents=True)
+            (source / "sessions" / "one.jsonl").write_text("{}\n", encoding="utf-8")
+
+            self._git(tmp_path, "init", "--bare", str(origin))
+            env = {"PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"}
+            with mock.patch.dict(os.environ, env, clear=False), mock.patch("aisync.operations.running_processes", return_value=[]):
+                with redirect_stdout(io.StringIO()):
+                    self.assertEqual(main(["--repo", str(repo), "init"]), 0)
+                self._git(repo, "branch", "-M", "main")
+                self._configure_git(repo)
+                self._git(repo, "remote", "add", "origin", str(origin))
+                (repo / "recipients.txt").write_text("age1fake\n", encoding="utf-8")
+                with redirect_stdout(io.StringIO()):
+                    self.assertEqual(main(["--repo", str(repo), "sync", "codex", "--source", str(source)]), 0)
+
+            upstream = self._git(repo, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}").stdout.strip()
+            self.assertEqual(upstream, "origin/main")
+            self.assertEqual(len(list((repo / "vault").glob("codex-*.age"))), 1)
+
     def test_doctor_reports_missing_identity_without_leaking_secret(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp) / "repo"
@@ -288,6 +429,26 @@ class CoreTests(unittest.TestCase):
             self.assertEqual((target / "sessions" / "one.jsonl").read_text(encoding="utf-8"), '{"msg":"hello"}\n')
             self.assertEqual((target / "history.jsonl").read_text(encoding="utf-8"), '{"item":"h"}\n')
             self.assertTrue((repo / "backups" / "codex").exists())
+
+    def _git(self, cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(["git", *args], cwd=cwd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    def _configure_git(self, repo: Path) -> None:
+        self._git(repo, "config", "user.email", "test@example.invalid")
+        self._git(repo, "config", "user.name", "AIsync Test")
+
+    def _init_git_repo(self, repo: Path) -> None:
+        repo.mkdir(parents=True)
+        self._git(repo, "init")
+        self._git(repo, "branch", "-M", "main")
+        self._configure_git(repo)
+
+    def _commit_file(self, repo: Path, rel: str, content: str, message: str) -> None:
+        path = repo / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        self._git(repo, "add", rel)
+        self._git(repo, "commit", "-m", message)
 
     def _write_fake_tools(self, fake_bin: Path) -> None:
         age = fake_bin / "age"

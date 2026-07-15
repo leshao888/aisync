@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) | English
 
-![Version](https://img.shields.io/badge/version-0.2.0a2-0A7AFF)
+![Version](https://img.shields.io/badge/version-0.2.0a3-0A7AFF)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-3776AB)
 ![Profile](https://img.shields.io/badge/profile-Codex-111827)
 ![Encryption](https://img.shields.io/badge/encryption-age-22C55E)
@@ -104,6 +104,7 @@ Restore creates a backup before writing. Read the full recovery guide: [Recovery
 aisync init
 aisync doctor
 aisync pull
+aisync conflicts
 aisync keygen
 aisync key list
 aisync recipient list
@@ -137,13 +138,14 @@ OK      git push completed
 
 ## Current Status
 
-`v0.2.0a2` is an alpha iteration. Codex is the first stable profile; key, recipient, history, pull, richer `doctor`, and stricter `profile` validation are available for vault operations.
+`v0.2.0a3` is an alpha iteration. Codex is the first stable profile; key, recipient, history, pull, conflict detection, richer `doctor`, and stricter `profile` validation are available for vault operations.
 
 Current limitations:
 
 - `doctor` requires `git`, `age`, and `gitleaks`.
 - `sync` stops if the repo is not initialized with Git.
 - `sync` with push enabled stops if no Git remote is configured.
+- `sync` stops before writing a new encrypted package if the vault repository is behind, diverged, or cannot fetch remote state.
 - Remote privacy must be confirmed manually.
 - Restore supports `merge` and `replace-file`; destructive tree replacement is intentionally not available.
 - The current archive format uses `tar.gz` from the Python standard library. `zstd` can be added later.

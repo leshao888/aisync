@@ -22,7 +22,15 @@ from .crypto import (
 )
 from .deps import check_required, require_tool, run
 from .errors import AisyncError, DangerError, RestoreError
-from .gitstore import commit_and_push, init_repo, pull, require_git_repository, require_remote
+from .gitstore import (
+    commit_and_push,
+    init_repo,
+    inspect_conflicts,
+    pull,
+    require_git_repository,
+    require_no_remote_conflict,
+    require_remote,
+)
 from .lock import RepoLock
 from .matcher import matches_any
 from .processes import running_processes
@@ -149,6 +157,47 @@ def profile_validate(name: str, ui: UI) -> None:
 def pull_repo(repo: Path, ui: UI) -> None:
     pull(repo)
     ui.ok("git pull completed")
+
+
+def conflicts(repo: Path, ui: UI) -> int:
+    status = inspect_conflicts(repo, fetch_remote=True)
+    ui.info(f"branch: {status.branch or 'unknown'}")
+    if status.upstream:
+        ui.info(f"upstream: {status.upstream}")
+    ui.info(f"state: {status.state}")
+    if status.local:
+        ui.info(f"local: {status.local[:12]}")
+    if status.remote:
+        ui.info(f"remote: {status.remote[:12]}")
+    if status.details:
+        ui.info(status.details)
+    if status.dirty and status.state != "dirty":
+        ui.warn("local vault repository has uncommitted changes")
+    if status.state in {"synced", "ahead", "no-upstream", "no-remote"}:
+        if status.state == "synced":
+            ui.ok("vault repository is in sync with remote")
+        elif status.state == "ahead":
+            ui.ok("local vault repository is ahead of remote; push is safe")
+            ui.next("Run: git push")
+        elif status.state == "no-upstream":
+            ui.ok("no upstream branch yet; first push can create it")
+        else:
+            ui.warn("no Git remote configured")
+            ui.next("Add a private remote before real sync.")
+        return 0
+    if status.state == "behind":
+        ui.warn("local vault repository is behind remote")
+        ui.next("Run: aisync --repo <repo> pull")
+    elif status.state == "dirty":
+        ui.danger("local vault repository has uncommitted changes")
+        ui.next("Commit, restore, or discard local vault repository changes before sync.")
+    elif status.state == "diverged":
+        ui.danger("local and remote vault histories have diverged")
+        ui.next("Resolve the Git divergence manually before running sync again.")
+    elif status.state == "fetch-failed":
+        ui.error("could not fetch remote state")
+        ui.next("Check network access and Git credentials.")
+    return 1
 
 
 def keygen(repo: Path, ui: UI, *, force: bool = False) -> None:
@@ -301,6 +350,11 @@ def sync(
     if push:
         require_remote(repo)
         ui.warn("AIsync cannot verify remote privacy offline; confirm the Git remote is private.")
+        conflict_status = require_no_remote_conflict(repo)
+        if conflict_status.state == "no-upstream":
+            ui.warn("git upstream is not set; first push will create it")
+        if conflict_status.dirty:
+            ui.warn("vault repository has uncommitted changes; sync will only stage AIsync-managed paths")
     running = running_processes(profile.process_names)
     if running:
         ui.warn(f"app appears to be running: {', '.join(running)}")

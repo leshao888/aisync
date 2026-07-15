@@ -48,7 +48,7 @@ Not yet as a stable profile. The architecture is profile-based, so future versio
 
 ## Can multiple machines sync at the same time?
 
-Use `aisync pull` before `sync` and avoid simultaneous writes. Automatic conflict merge is a future feature.
+Use `aisync pull` and `aisync conflicts` before `sync`, and avoid simultaneous writes. Automatic conflict merge is a future feature.
 
 ## Does restore overwrite my current Codex data?
 
@@ -79,3 +79,13 @@ aisync --repo ~/Developer/projects/aisync-vault pull
 ```
 
 It runs `git pull --ff-only` and stops if the vault has diverged.
+
+## How do I check whether the vault has Git conflicts?
+
+Use:
+
+```bash
+aisync --repo ~/Developer/projects/aisync-vault conflicts
+```
+
+The safe states are `synced`, `ahead`, and `no-upstream`. `behind`, `diverged`, `dirty`, or `fetch-failed` need attention before sync.

@@ -48,8 +48,10 @@
 - `aisync recipient remove`
 - `aisync history <profile>`
 - `aisync pull`
+- `aisync conflicts`
 - richer `doctor`
 - stricter profile validation
+- sync 写入新的 vault package 前进行 conflict detection
 - symlink policy
 - app-running warnings
 
@@ -57,7 +59,6 @@
 
 - Linux support
 - Claude Code experimental profile
-- conflict detection
 - installation through `pipx`
 - dangerous scenarios 的 tests
 

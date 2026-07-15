@@ -6,6 +6,7 @@ from pathlib import Path
 from . import __version__
 from .errors import AisyncError
 from .operations import (
+    conflicts,
     doctor,
     history,
     init,
@@ -40,6 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("doctor", help="Check dependencies and repository readiness")
     sub.add_parser("pull", help="Pull the encrypted sync repository with --ff-only")
+    sub.add_parser("conflicts", help="Inspect local and remote vault Git state")
 
     keygen_cmd = sub.add_parser("keygen", help="Generate a local age key and add its public recipient")
     keygen_cmd.add_argument("--force", action="store_true", help="Overwrite the local age identity")
@@ -101,6 +103,8 @@ def main(argv: list[str] | None = None) -> int:
             return doctor(repo, ui)
         elif args.command == "pull":
             pull_repo(repo, ui)
+        elif args.command == "conflicts":
+            return conflicts(repo, ui)
         elif args.command == "keygen":
             keygen(repo, ui, force=args.force)
         elif args.command == "key":

@@ -86,7 +86,7 @@ guard         deny rules and dangerous file detection
 scan          gitleaks and lightweight fallback scans
 archive       tar.zst or tar.gz packaging
 crypto        age encrypt/decrypt and recipient handling
-gitstore      git pull/add/commit/push wrappers
+gitstore      git pull/add/commit/push and conflict inspection wrappers
 restore       backup, preview, merge, replace-file policies
 lock          prevent concurrent operations
 state         local status and last operation metadata

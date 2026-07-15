@@ -45,7 +45,7 @@ PYTHONPATH=src python3 -m aisync --version
 你应该看到：
 
 ```text
-aisync 0.2.0a2
+aisync 0.2.0a3
 ```
 
 ## 3. 创建 private vault repository
@@ -129,9 +129,12 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync c
 ```bash
 cd ~/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault pull
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault conflicts
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex
 ```
+
+`conflicts` 在 sync 前应显示 `synced`、`ahead` 或 `no-upstream`。如果显示 `behind`，先运行 `pull`；如果显示 `diverged`、`dirty` 或 `fetch-failed`，请先检查 vault repository。
 
 ## 8. 检查 vault
 

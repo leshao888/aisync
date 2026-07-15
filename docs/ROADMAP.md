@@ -48,8 +48,10 @@ Current alpha progress:
 - `aisync recipient remove`
 - `aisync history <profile>`
 - `aisync pull`
+- `aisync conflicts`
 - richer `doctor`
 - stricter profile validation
+- conflict detection before sync writes a new vault package
 - symlink policy
 - app-running warnings
 
@@ -57,7 +59,6 @@ Add:
 
 - Linux support
 - Claude Code experimental profile
-- conflict detection
 - installation through `pipx`
 - tests for dangerous scenarios
 

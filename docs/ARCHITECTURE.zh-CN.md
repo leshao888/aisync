@@ -86,7 +86,7 @@ guard         deny rules and dangerous file detection
 scan          gitleaks and lightweight fallback scans
 archive       tar.zst or tar.gz packaging
 crypto        age encrypt/decrypt and recipient handling
-gitstore      git pull/add/commit/push wrappers
+gitstore      git pull/add/commit/push 和 conflict inspection wrappers
 restore       backup, preview, merge, replace-file policies
 lock          prevent concurrent operations
 state         local status and last operation metadata
@@ -138,4 +138,3 @@ Manifest files 可以包含：
 - tool version
 
 Manifest files 不得包含 chat text、file contents、tokens、cookies、private keys 或 raw config secrets。
-
