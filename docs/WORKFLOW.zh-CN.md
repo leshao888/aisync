@@ -1,12 +1,12 @@
 # Development Workflow
 
-[简体中文](WORKFLOW.zh-CN.md) | English
+简体中文 | [English](WORKFLOW.md)
 
-This document defines the default workflow for AIsync development.
+本文档定义 AIsync development 的默认 workflow。
 
 ## Goal
 
-Every user request should be handled as a complete engineering task:
+每个用户需求都应作为完整 engineering task 处理：
 
 ```text
 understand
@@ -17,35 +17,35 @@ understand
 -> push or open PR with gh
 ```
 
-The only exception is when the user explicitly asks for planning, analysis, or no code changes.
+唯一例外：用户明确要求只做 planning、analysis 或不做 code changes。
 
 ## Standard Flow
 
-1. Read `AGENTS.md` and relevant docs.
-2. Inspect the affected code before editing.
-3. Keep the change scoped to the request.
-4. Implement the change.
-5. Add or update tests.
-6. Run local verification.
-7. Update README/docs when user-facing behavior changes.
-8. Review `git status --short`.
-9. Commit with a Chinese commit message.
-10. Use `gh` for GitHub operations.
+1. 阅读 `AGENTS.md` 和相关 docs。
+2. 编辑前检查受影响代码。
+3. 将改动限制在需求范围内。
+4. 实现改动。
+5. 添加或更新 tests。
+6. 运行 local verification。
+7. 当 user-facing behavior 改变时更新 README/docs。
+8. 检查 `git status --short`。
+9. 使用中文 commit message。
+10. 使用 `gh` 处理 GitHub operations。
 
 ## Required Local Verification
 
-Run these before every code commit:
+每次 code commit 前运行：
 
 ```bash
 PYTHONPATH=src python3 -m unittest discover -s tests -v
 PYTHONPYCACHEPREFIX=$(mktemp -d) python3 -m compileall -q src tests
 ```
 
-For documentation-only changes, the test suite is optional unless the docs include runnable commands or workflow changes. If tests are skipped, say so in the final summary.
+Documentation-only changes 可以不跑 test suite，除非 docs 包含 runnable commands 或 workflow changes。如果跳过 tests，需要在 final summary 说明。
 
 ## GitHub CLI Usage
 
-Use `gh` for repository and PR operations:
+使用 `gh` 处理 repository 和 PR operations：
 
 ```bash
 gh auth status
@@ -58,7 +58,7 @@ gh run list
 gh run view
 ```
 
-Use `git` for local source control:
+使用 `git` 处理 local source control：
 
 ```bash
 git status --short
@@ -69,7 +69,7 @@ git push
 
 ## Branch Strategy
 
-Prefer feature branches for non-trivial changes:
+非平凡改动优先使用 feature branches：
 
 ```bash
 git checkout -b feature/topic
@@ -79,13 +79,13 @@ git push -u origin feature/topic
 gh pr create --title "功能: 添加 xxx" --body "..."
 ```
 
-Small documentation-only changes may go directly to `main` when the user asks for a quick update.
+用户要求快速更新时，小型 documentation-only changes 可以直接进入 `main`。
 
 ## Chinese Commit Messages
 
-Commit messages must be Chinese.
+Commit messages 必须使用中文。
 
-Recommended prefixes:
+推荐 prefixes：
 
 ```text
 功能: 添加 xxx
@@ -100,7 +100,7 @@ Recommended prefixes:
 
 ## Definition Of Done
 
-A task is not done until:
+满足以下条件才算完成：
 
 - implementation is complete
 - tests cover normal paths and risky failure paths
@@ -112,11 +112,12 @@ A task is not done until:
 
 ## Secret And Privacy Check
 
-Before committing, check for high-risk files:
+Commit 前检查 high-risk files：
 
 ```bash
 git status --short
 git ls-files | rg '(^|/)id_(rsa|ed25519)$|\\.ssh|\\.pem|\\.key|agekey|\\.env'
 ```
 
-The command should produce no output for tracked files.
+该命令对 tracked files 应无输出。
+

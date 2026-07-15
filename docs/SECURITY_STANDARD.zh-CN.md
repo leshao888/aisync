@@ -1,10 +1,10 @@
 # Security Standard
 
-[简体中文](SECURITY_STANDARD.zh-CN.md) | English
+简体中文 | [English](SECURITY_STANDARD.md)
 
 ## Security Model
 
-AIsync assumes local app data can contain:
+AIsync 假设 local app data 可能包含：
 
 - API keys
 - access tokens
@@ -16,21 +16,21 @@ AIsync assumes local app data can contain:
 - customer or company data
 - SSH private keys pasted into chats
 
-Therefore the tool must treat plaintext staging data as sensitive.
+因此，工具必须把 plaintext staging data 当作 sensitive data。
 
 ## Required Defaults
 
-- Remote storage must be encrypted by default.
-- Secret scanning must run before encryption.
-- Deny rules must run before encryption.
-- Restore must create a backup before writing.
-- Restore should stop if the target app appears to be running.
-- Dry-run must be available for sync and restore.
-- Logs must be privacy-safe.
+- Remote storage 默认必须 encrypted。
+- Encryption 前必须运行 secret scanning。
+- Encryption 前必须运行 deny rules。
+- Restore 写入前必须创建 backup。
+- Restore 发现 target app 似乎仍在运行时应当停止。
+- Sync 和 restore 必须支持 dry-run。
+- Logs 必须 privacy-safe。
 
 ## Fatal Conditions
 
-The operation must stop on:
+以下情况必须停止操作：
 
 - denied file found
 - gitleaks finding
@@ -46,7 +46,7 @@ The operation must stop on:
 
 ## Denied File Classes
 
-Profiles should deny:
+Profiles 应当 deny：
 
 ```text
 auth files
@@ -63,7 +63,7 @@ plugin caches unless explicitly allowlisted
 
 ## Logging Rules
 
-Logs may contain:
+Logs 可以包含：
 
 - timestamps
 - profile name
@@ -74,7 +74,7 @@ Logs may contain:
 - error code
 - high-level path names
 
-Logs must not contain:
+Logs 不得包含：
 
 - file contents
 - chat snippets
@@ -86,16 +86,17 @@ Logs must not contain:
 
 ## Key Management
 
-MVP may store age private keys in a local config path, but must warn clearly.
+MVP 可以把 age private keys 存在 local config path，但必须给出清晰 warning。
 
-Preferred future storage:
+未来优先 storage：
 
 - macOS Keychain
 - Linux Secret Service
 - Windows Credential Manager
 
-The sync repository must never include private keys.
+Sync repository 永远不得包含 private keys。
 
 ## GitHub Private Repository Warning
 
-A private Git repository is access control, not end-to-end encryption. AIsync should only rely on Git as transport/storage. Confidentiality should come from age encryption.
+Private Git repository 是 access control，不是 end-to-end encryption。AIsync 只应把 Git 当作 transport/storage。Confidentiality 应来自 age encryption。
+

@@ -167,3 +167,5 @@ aisync logs
 - `docs/WORKFLOW.md` for development workflow and GitHub CLI usage
 - `docs/TESTING.md` for testing standards and boundary cases
 - `CONTRIBUTING.md` for contribution rules
+
+Simplified Chinese translations use the `.zh-CN.md` suffix, such as `docs/ARCHITECTURE.zh-CN.md`.

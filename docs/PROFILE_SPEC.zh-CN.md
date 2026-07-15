@@ -1,8 +1,8 @@
 # Profile Spec Draft
 
-[简体中文](PROFILE_SPEC.zh-CN.md) | English
+简体中文 | [English](PROFILE_SPEC.md)
 
-Profiles describe what one app can safely sync.
+Profiles 描述一个 app 可以安全 sync 什么。
 
 ## Draft Shape
 
@@ -60,18 +60,19 @@ capabilities:
 
 ## Include Rules
 
-Includes are allowlist entries. A profile should include only files required to restore useful app state.
+Includes 是 allowlist entries。Profile 只应 include 恢复有用 app state 所需的 files。
 
 ## Deny Rules
 
-Deny rules are fatal. If a denied path appears in staging, sync stops.
+Deny rules 是 fatal。如果 staging 中出现 denied path，sync 停止。
 
 ## Restore Rules
 
-Initial restore modes:
+初始 restore modes：
 
 - `preview`: show what would happen
 - `merge`: add missing files, avoid overwriting existing files where possible
 - `replace-file`: replace same-named allowlisted files after backup
 
-Avoid `replace-tree` in the MVP.
+MVP 中避免 `replace-tree`。
+

@@ -1,5 +1,9 @@
 # AIsync Project Guidance
 
+[简体中文翻译](AGENTS.zh-CN.md) | English
+
+This file is the normative project guidance for Codex. The Simplified Chinese file is a translation for human readers.
+
 ## Project Mission
 
 AIsync is a local AI app data safety sync tool. It should help users sync selected local data for tools such as Codex, Claude Code, Cursor, and similar AI developer apps across machines without relying on the same product account.

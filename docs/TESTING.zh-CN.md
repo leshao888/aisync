@@ -1,12 +1,12 @@
 # Testing Standard
 
-[简体中文](TESTING.zh-CN.md) | English
+简体中文 | [English](TESTING.md)
 
-AIsync handles private local data, so tests must treat safety behavior as product behavior.
+AIsync 处理 private local data，因此 tests 必须把 safety behavior 当作 product behavior。
 
 ## Required Test Layers
 
-Use these layers as the project grows:
+随着项目增长，使用这些 layers：
 
 ```text
 unit tests
@@ -18,7 +18,7 @@ unit tests
 
 ## Required Local Commands
 
-Run before every code commit:
+每次 code commit 前运行：
 
 ```bash
 PYTHONPATH=src python3 -m unittest discover -s tests -v
@@ -27,7 +27,7 @@ PYTHONPYCACHEPREFIX=$(mktemp -d) python3 -m compileall -q src tests
 
 ## Boundary Test Checklist
 
-Add or update tests when touching these areas:
+触碰以下区域时，添加或更新 tests：
 
 - denied file appears in included scope
 - secret scanner reports a finding
@@ -53,7 +53,7 @@ Add or update tests when touching these areas:
 
 ## Security Regression Tests
 
-Security checks must be tested as fatal behavior:
+Security checks 必须作为 fatal behavior 测试：
 
 ```text
 dangerous input
@@ -66,9 +66,9 @@ dangerous input
 
 ## Fake Tool Tests
 
-Use fake `age`, `age-keygen`, and `gitleaks` in tests to avoid requiring real external tools for the basic end-to-end suite.
+在 tests 中使用 fake `age`、`age-keygen` 和 `gitleaks`，避免基础 end-to-end suite 依赖真实 external tools。
 
-The fake-tool test should cover:
+Fake-tool test 应覆盖：
 
 - init
 - sync
@@ -79,28 +79,29 @@ The fake-tool test should cover:
 
 ## CI Expectations
 
-GitHub Actions should run on:
+GitHub Actions 应在以下场景运行：
 
 - `push`
 - `pull_request`
 
-Required Python versions:
+Required Python versions：
 
 - 3.10
 - 3.11
 - 3.12
 
-Required CI commands:
+Required CI commands：
 
 ```bash
 python -m unittest discover -s tests -v
 PYTHONPYCACHEPREFIX=$(mktemp -d) python -m compileall -q src tests
 ```
 
-Future CI additions:
+Future CI additions：
 
 - ruff
 - mypy or pyright
 - coverage threshold
 - gitleaks repository scan
 - package build check
+

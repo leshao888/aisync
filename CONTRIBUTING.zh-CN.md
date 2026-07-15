@@ -1,12 +1,12 @@
 # Contributing
 
-[简体中文](CONTRIBUTING.zh-CN.md) | English
+简体中文 | [English](CONTRIBUTING.md)
 
-Thanks for helping improve AIsync.
+感谢你帮助改进 AIsync。
 
-## Before You Start
+## 开始之前
 
-Read:
+请先阅读：
 
 - `AGENTS.md`
 - `docs/WORKFLOW.md`
@@ -20,28 +20,28 @@ python3 -m pip install -e .
 PYTHONPATH=src python3 -m aisync --version
 ```
 
-Required external tools for real sync behavior:
+真实 sync behavior 需要这些 external tools：
 
 ```bash
 brew install age gitleaks
 ```
 
-Tests use fake tools where possible, so the basic test suite can run without real `age` and `gitleaks`.
+Tests 会尽可能使用 fake tools，所以基础 test suite 可以在没有真实 `age` 和 `gitleaks` 的情况下运行。
 
 ## Testing
 
-Run:
+运行：
 
 ```bash
 PYTHONPATH=src python3 -m unittest discover -s tests -v
 PYTHONPYCACHEPREFIX=$(mktemp -d) python3 -m compileall -q src tests
 ```
 
-Add tests for normal behavior, failure behavior, and safety boundaries.
+需要为 normal behavior、failure behavior 和 safety boundaries 添加 tests。
 
 ## Commit Messages
 
-Use Chinese commit messages:
+使用中文 commit messages：
 
 ```text
 功能: 添加 xxx
@@ -55,10 +55,10 @@ Use Chinese commit messages:
 
 ## Privacy Rules
 
-Never commit:
+永远不要提交：
 
 - real Codex sessions
-- vault packages from personal sync repositories
+- personal sync repositories 里的 vault packages
 - `.env`
 - SSH private keys
 - age private keys
@@ -67,4 +67,5 @@ Never commit:
 - cookies
 - app auth files
 
-The source repository can be public. Personal sync vault repositories must be private and should contain only encrypted `.age` packages plus non-sensitive manifests.
+Source repository 可以公开。Personal sync vault repositories 必须私有，并且只应包含 encrypted `.age` packages 和 non-sensitive manifests。
+

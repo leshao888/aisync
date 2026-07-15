@@ -1,14 +1,14 @@
 # AIsync Architecture
 
-[简体中文](ARCHITECTURE.zh-CN.md) | English
+简体中文 | [English](ARCHITECTURE.md)
 
 ## Positioning
 
-AIsync is a local-first sync framework for selected AI app data. It should not be coupled to one app. Each supported app is described by a profile, while shared safety logic lives in the core.
+AIsync 是一个 local-first sync framework，用于同步选定的 AI app data。它不应绑定某一个 app。每个 supported app 都由一个 profile 描述，共用的安全逻辑放在 core。
 
 ## High-Level Flow
 
-Sync:
+Sync：
 
 ```text
 profile
@@ -27,7 +27,7 @@ profile
 -> update state
 ```
 
-Restore:
+Restore：
 
 ```text
 git pull
@@ -45,7 +45,7 @@ git pull
 
 ## Repository Layout
 
-Development repository:
+Development repository：
 
 ```text
 aisync/
@@ -59,7 +59,7 @@ aisync/
 └── pyproject.toml     # later
 ```
 
-User sync repository:
+User sync repository：
 
 ```text
 aisync-repo/
@@ -72,7 +72,7 @@ aisync-repo/
 └── .gitignore
 ```
 
-The user sync repository should not contain plaintext staging data, app auth files, app databases, private keys, or secret values.
+User sync repository 不应包含 plaintext staging data、app auth files、app databases、private keys 或 secret values。
 
 ## Core Modules
 
@@ -96,17 +96,17 @@ errors        error codes and suggested next actions
 
 ## Extension Model
 
-Adding a new app should primarily mean adding a profile:
+新增 app 主要应当意味着新增一个 profile：
 
 ```text
 profiles/<app>.yaml
 ```
 
-Core logic should not include hard-coded app-specific paths except for bundled default profiles.
+Core logic 不应包含 hard-coded app-specific paths，除了 bundled default profiles。
 
 ## Platform Strategy
 
-All source paths must be defined per platform:
+所有 source paths 必须按 platform 定义：
 
 ```yaml
 source:
@@ -115,7 +115,7 @@ source:
   windows: "%USERPROFILE%\\.codex"
 ```
 
-The platform layer is responsible for:
+Platform layer 负责：
 
 - environment variable expansion
 - home directory expansion
@@ -125,7 +125,7 @@ The platform layer is responsible for:
 
 ## Manifest Strategy
 
-Manifest files may include:
+Manifest files 可以包含：
 
 - profile name and version
 - created timestamp
@@ -137,4 +137,5 @@ Manifest files may include:
 - app profile hash
 - tool version
 
-Manifest files must not include chat text, file contents, tokens, cookies, private keys, or raw config secrets.
+Manifest files 不得包含 chat text、file contents、tokens、cookies、private keys 或 raw config secrets。
+

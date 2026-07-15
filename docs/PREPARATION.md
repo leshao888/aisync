@@ -1,5 +1,7 @@
 # Pre-Development Preparation
 
+[简体中文](PREPARATION.zh-CN.md) | English
+
 Before implementation continues beyond the v0.1 skeleton, settle these items.
 
 ## Product Decisions

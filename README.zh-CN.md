@@ -167,3 +167,5 @@ aisync logs
 - `docs/WORKFLOW.md`：开发工作流和 GitHub CLI 使用规范
 - `docs/TESTING.md`：测试标准和边界测试清单
 - `CONTRIBUTING.md`：贡献规范
+
+简体中文翻译使用 `.zh-CN.md` 后缀，例如 `docs/ARCHITECTURE.zh-CN.md`。专有名词保留原文，例如 `AIsync`、`Codex`、`GitHub`、`profile`、`vault`、`manifest`、`age`、`gitleaks`、`sync`、`restore`、`dry-run` 和 `CI`。
