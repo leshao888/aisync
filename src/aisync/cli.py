@@ -15,6 +15,7 @@ from .operations import (
     profile_list,
     profile_show,
     profile_validate,
+    pull_repo,
     recipient_add,
     recipient_list,
     recipient_remove,
@@ -38,6 +39,7 @@ def build_parser() -> argparse.ArgumentParser:
     init_cmd.add_argument("--no-git", action="store_true", help="Create folders without running git init")
 
     sub.add_parser("doctor", help="Check dependencies and repository readiness")
+    sub.add_parser("pull", help="Pull the encrypted sync repository with --ff-only")
 
     keygen_cmd = sub.add_parser("keygen", help="Generate a local age key and add its public recipient")
     keygen_cmd.add_argument("--force", action="store_true", help="Overwrite the local age identity")
@@ -97,6 +99,8 @@ def main(argv: list[str] | None = None) -> int:
             init(repo, ui, git_init=not args.no_git)
         elif args.command == "doctor":
             return doctor(repo, ui)
+        elif args.command == "pull":
+            pull_repo(repo, ui)
         elif args.command == "keygen":
             keygen(repo, ui, force=args.force)
         elif args.command == "key":

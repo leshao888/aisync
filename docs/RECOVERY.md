@@ -46,6 +46,7 @@ The identity must match one of the recipients used to encrypt the vault package.
 ```bash
 cd ~/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault doctor
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault pull
 ```
 
 If `doctor` reports missing dependencies, recipients, Git remote, or identity issues, fix those first.
@@ -118,4 +119,3 @@ Then retry restore.
 ### Backup failed
 
 Do not force restore. Fix permissions or disk space first. AIsync should not write into the target directory if backup fails.
-

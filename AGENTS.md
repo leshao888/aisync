@@ -18,11 +18,11 @@ The tool must be privacy-first. It should never treat a private Git repository a
 
 ## Current Phase
 
-This repository is in `v0.1` development. The user explicitly approved starting implementation after the planning phase.
+This repository is in `v0.2` alpha development. The user explicitly approved starting implementation after the planning phase.
 
 Allowed work now:
 
-- Python CLI implementation
+- Python CLI implementation and alpha iteration
 - Codex profile implementation
 - Local fake-data tests
 - Documentation updates
@@ -184,11 +184,12 @@ Version `v0.1` should provide a complete safe sync loop for Codex on macOS:
 
 Do not expand to many apps before the Codex flow is boringly reliable.
 
-Implemented v0.1 commands currently include:
+Implemented commands currently include:
 
 ```bash
 aisync init
 aisync doctor
+aisync pull
 aisync keygen
 aisync profile list
 aisync profile show codex

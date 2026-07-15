@@ -45,7 +45,7 @@ PYTHONPATH=src python3 -m aisync --version
 You should see:
 
 ```text
-aisync 0.2.0a1
+aisync 0.2.0a2
 ```
 
 ## 3. Create A Private Vault Repository
@@ -128,6 +128,7 @@ Successful sync should:
 
 ```bash
 cd ~/Developer/projects/aisync
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault pull
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex
 ```

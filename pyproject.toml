@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aisync"
-version = "0.2.0a1"
+version = "0.2.0a2"
 description = "Privacy-first sync for local AI app data"
 readme = "README.md"
 requires-python = ">=3.10"

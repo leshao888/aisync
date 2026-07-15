@@ -46,6 +46,7 @@ export AISYNC_AGE_IDENTITY="$HOME/.config/aisync/keys/identity.txt"
 ```bash
 cd ~/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault doctor
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault pull
 ```
 
 如果 `doctor` 报告缺少 dependencies、recipients、Git remote 或 identity 问题，先修复这些问题。
@@ -118,4 +119,3 @@ git pull --ff-only
 ### Backup failed
 
 不要强行 restore。先修复 permissions 或 disk space。Backup 失败时，AIsync 不应写入 target directory。
-

@@ -88,7 +88,7 @@ def doctor(repo: Path, ui: UI) -> int:
             ui.error(f"{dep.name}: missing")
             ui.next(dep.install_hint)
     if recipients_path(repo).exists():
-        recipients = [line for line in recipients_path(repo).read_text(encoding="utf-8").splitlines() if line.strip() and not line.strip().startswith("#")]
+        recipients = parse_recipients(recipients_path(repo))
         if recipients:
             ui.ok(f"age recipients: {len(recipients)} configured")
         else:
@@ -114,6 +114,12 @@ def doctor(repo: Path, ui: UI) -> int:
         ok = False
         ui.warn("git repository: not initialized")
         ui.next("Run: aisync --repo <repo> init")
+    identity = default_identity_path()
+    if identity.exists():
+        ui.ok(f"age identity: {identity}")
+    else:
+        ui.warn(f"age identity missing: {identity}")
+        ui.next("Run: aisync keygen, or set AISYNC_AGE_IDENTITY for restore.")
     return 0 if ok else 1
 
 
@@ -138,6 +144,11 @@ def profile_validate(name: str, ui: UI) -> None:
     ui.ok(f"profile valid: {profile.name}")
     ui.info(f"profile file: {profile.path}")
     ui.info(f"profile sha256: {profile.digest}")
+
+
+def pull_repo(repo: Path, ui: UI) -> None:
+    pull(repo)
+    ui.ok("git pull completed")
 
 
 def keygen(repo: Path, ui: UI, *, force: bool = False) -> None:

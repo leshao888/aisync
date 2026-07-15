@@ -47,16 +47,17 @@
 - `aisync recipient add`
 - `aisync recipient remove`
 - `aisync history <profile>`
+- `aisync pull`
+- richer `doctor`
+- stricter profile validation
+- symlink policy
+- app-running warnings
 
 新增：
 
 - Linux support
 - Claude Code experimental profile
-- stricter profile schema validation
-- symlink policy
-- app-running warnings
 - conflict detection
-- richer `doctor`
 - installation through `pipx`
 - dangerous scenarios 的 tests
 

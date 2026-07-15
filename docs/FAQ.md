@@ -44,11 +44,11 @@ You cannot decrypt old vault packages unless another recipient can decrypt them.
 
 ## Can AIsync sync Claude Code or Cursor?
 
-Not as a stable profile in v0.1. The architecture is profile-based, so future versions can add Claude Code, Cursor, Gemini CLI, and other local AI tools.
+Not yet as a stable profile. The architecture is profile-based, so future versions can add Claude Code, Cursor, Gemini CLI, and other local AI tools.
 
 ## Can multiple machines sync at the same time?
 
-This is not fully automated in v0.1. Use `git pull --ff-only` before sync and avoid simultaneous writes. Automatic conflict merge is a future feature.
+Use `aisync pull` before `sync` and avoid simultaneous writes. Automatic conflict merge is a future feature.
 
 ## Does restore overwrite my current Codex data?
 
@@ -69,3 +69,13 @@ Use:
 ```bash
 aisync --repo ~/Developer/projects/aisync-vault history codex
 ```
+
+## How do I update my local vault before syncing?
+
+Use:
+
+```bash
+aisync --repo ~/Developer/projects/aisync-vault pull
+```
+
+It runs `git pull --ff-only` and stops if the vault has diverged.

@@ -2,7 +2,7 @@
 
 简体中文 | [English](README.md)
 
-![版本](https://img.shields.io/badge/version-0.2.0a1-0A7AFF)
+![版本](https://img.shields.io/badge/version-0.2.0a2-0A7AFF)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-3776AB)
 ![Codex](https://img.shields.io/badge/profile-Codex-111827)
 ![加密](https://img.shields.io/badge/encryption-age-22C55E)
@@ -103,6 +103,7 @@ Restore 写入前会创建 backup。完整恢复指南见：[Recovery](docs/RECO
 ```bash
 aisync init
 aisync doctor
+aisync pull
 aisync keygen
 aisync key list
 aisync recipient list
@@ -136,7 +137,7 @@ OK      git push completed
 
 ## 当前状态
 
-`v0.2.0a1` 是 alpha 迭代版本。Codex 是第一个 stable profile；key、recipient 和 history 管理命令已经可用于 vault operations。
+`v0.2.0a2` 是 alpha 迭代版本。Codex 是第一个 stable profile；key、recipient、history、pull、更完整的 `doctor` 和更严格的 `profile` validation 已经可用于 vault operations。
 
 当前限制：
 
@@ -145,7 +146,7 @@ OK      git push completed
 - `sync` 默认启用 push；没有 Git remote 时会中止。
 - Remote privacy 需要用户手动确认。
 - Restore 支持 `merge` 和 `replace-file`；暂不提供危险的整目录替换。
-- v0.1 使用 Python 标准库的 `tar.gz`。后续可添加 `zstd`。
+- 当前 archive format 使用 Python 标准库的 `tar.gz`。后续可添加 `zstd`。
 
 ## Documentation
 

@@ -14,8 +14,8 @@ from unittest import mock
 from aisync.archive import safe_extract_tar_gz
 from aisync.cli import main
 from aisync.collector import discover_files
-from aisync.errors import DangerError, RestoreError
-from aisync.profile import load_profile
+from aisync.errors import DangerError, ProfileError, RestoreError
+from aisync.profile import load_profile, validate_profile
 
 
 class CoreTests(unittest.TestCase):
@@ -90,6 +90,123 @@ class CoreTests(unittest.TestCase):
                 code = main(["--repo", str(repo), "recipient", "add", "not-a-recipient"])
             self.assertEqual(code, 2)
             self.assertFalse(repo.exists())
+
+    def test_profile_validation_rejects_absolute_pattern(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.yaml"
+            raw = {
+                "schema_version": 1,
+                "name": "bad",
+                "source": {"macos": "~/.bad"},
+                "include": ["/absolute/path"],
+                "deny": [],
+            }
+            with self.assertRaises(ProfileError):
+                validate_profile(raw, path)
+
+    def test_profile_validation_rejects_parent_escape_pattern(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.yaml"
+            raw = {
+                "schema_version": 1,
+                "name": "bad",
+                "source": {"macos": "~/.bad"},
+                "include": ["../outside"],
+                "deny": [],
+            }
+            with self.assertRaises(ProfileError):
+                validate_profile(raw, path)
+
+    def test_profile_validation_rejects_invalid_stability(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.yaml"
+            raw = {
+                "schema_version": 1,
+                "name": "bad",
+                "stability": "production",
+                "source": {"macos": "~/.bad"},
+                "include": ["sessions/**"],
+                "deny": [],
+            }
+            with self.assertRaises(ProfileError):
+                validate_profile(raw, path)
+
+    def test_profile_validation_rejects_unknown_source_platform(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.yaml"
+            raw = {
+                "schema_version": 1,
+                "name": "bad",
+                "source": {"macos": "~/.bad", "ios": "~/.bad"},
+                "include": ["sessions/**"],
+                "deny": [],
+            }
+            with self.assertRaises(ProfileError):
+                validate_profile(raw, path)
+
+    def test_profile_validation_rejects_invalid_restore_mode(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.yaml"
+            raw = {
+                "schema_version": 1,
+                "name": "bad",
+                "source": {"macos": "~/.bad"},
+                "include": ["sessions/**"],
+                "deny": [],
+                "restore": {"default_mode": "delete"},
+            }
+            with self.assertRaises(ProfileError):
+                validate_profile(raw, path)
+
+    def test_profile_validation_rejects_non_map_restore(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.yaml"
+            raw = {
+                "schema_version": 1,
+                "name": "bad",
+                "source": {"macos": "~/.bad"},
+                "include": ["sessions/**"],
+                "deny": [],
+                "restore": "merge",
+            }
+            with self.assertRaises(ProfileError):
+                validate_profile(raw, path)
+
+    def test_profile_validation_rejects_non_list_process_names(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.yaml"
+            raw = {
+                "schema_version": 1,
+                "name": "bad",
+                "source": {"macos": "~/.bad"},
+                "include": ["sessions/**"],
+                "deny": [],
+                "process_names": "Codex",
+            }
+            with self.assertRaises(ProfileError):
+                validate_profile(raw, path)
+
+    def test_pull_requires_git_repository(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            with redirect_stdout(io.StringIO()):
+                code = main(["--repo", str(repo), "pull"])
+            self.assertEqual(code, 1)
+
+    def test_doctor_reports_missing_identity_without_leaking_secret(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            identity = Path(tmp) / "missing-identity.txt"
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["--repo", str(repo), "init", "--no-git"]), 0)
+            (repo / "recipients.txt").write_text("age1fake\n", encoding="utf-8")
+            with mock.patch.dict(os.environ, {"AISYNC_AGE_IDENTITY": str(identity)}, clear=False):
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    code = main(["--repo", str(repo), "doctor"])
+            self.assertEqual(code, 1)
+            self.assertIn("age identity missing", out.getvalue())
+            self.assertNotIn("PRIVATE", out.getvalue())
 
     def test_history_reads_manifests_without_file_contents(self):
         with tempfile.TemporaryDirectory() as tmp:
