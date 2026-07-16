@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) | English
 
-![Version](https://img.shields.io/badge/version-0.2.0a5-0A7AFF)
+![Version](https://img.shields.io/badge/version-0.2.0a6-0A7AFF)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-3776AB)
 ![Profiles](https://img.shields.io/badge/profiles-Codex%20%7C%20Claude%20experimental-111827)
 ![Encryption](https://img.shields.io/badge/encryption-age-22C55E)
@@ -87,25 +87,35 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault doctor
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault recipient list
 ```
 
-Preview and run Codex sync:
+Show the supported workflow for each profile:
 
 ```bash
-PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
-PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex
+PYTHONPATH=src python3 -m aisync profile workflow codex
+PYTHONPATH=src python3 -m aisync profile workflow claude
 ```
 
-Read the full guide: [Quick Start](docs/QUICKSTART.md).
-
-## Restore
-
-Close Codex before restore, then preview first:
+Codex is stable and supports the full sync and restore workflow:
 
 ```bash
+PYTHONPATH=src python3 -m aisync profile validate codex
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault restore codex --dry-run
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault restore codex
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault history codex
 ```
 
 Restore creates a backup before writing. Read the full recovery guide: [Recovery](docs/RECOVERY.md).
+
+Claude Code is experimental and sync-only:
+
+```bash
+PYTHONPATH=src python3 -m aisync profile validate claude
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync claude --dry-run
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync claude
+```
+
+`restore claude` is intentionally disabled. Read the full guide: [Quick Start](docs/QUICKSTART.md).
 
 ## Commands
 
@@ -122,8 +132,10 @@ aisync recipient remove <age-recipient>
 aisync profile list
 aisync profile show codex
 aisync profile validate codex
+aisync profile workflow codex
 aisync profile show claude
 aisync profile validate claude
+aisync profile workflow claude
 aisync sync codex --dry-run
 aisync sync codex
 aisync sync claude --dry-run
@@ -151,7 +163,7 @@ OK      git push completed
 
 ## Current Status
 
-`v0.2.0a5` is an alpha iteration that closes the planned v0.2 scope. Codex is the first stable profile. Claude Code has an experimental sync-only profile with a strict capability gate that blocks restore until its layout and restore behavior are validated.
+`v0.2.0a6` is an alpha iteration that closes the planned v0.2 scope and documents complete profile workflows in the CLI. Codex is the first stable profile. Claude Code has an experimental sync-only profile with a strict capability gate that blocks restore until its layout and restore behavior are validated.
 
 Current limitations:
 
@@ -162,6 +174,7 @@ Current limitations:
 - `sync` with push enabled stops if no Git remote is configured.
 - `sync` stops before writing a new encrypted package if the vault repository is behind, diverged, or cannot fetch remote state.
 - Remote privacy must be confirmed manually.
+- `profile workflow` shows the supported command sequence for each profile.
 - `sync claude` is experimental and must be previewed with `--dry-run`; `restore claude` is disabled.
 - Restore supports `merge` and `replace-file`; destructive tree replacement is intentionally not available.
 - The current archive format uses `tar.gz` from the Python standard library. `zstd` can be added later.

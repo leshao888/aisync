@@ -56,7 +56,7 @@ PYTHONPATH=src python3 -m aisync --version
 You should see:
 
 ```text
-aisync 0.2.0a5
+aisync 0.2.0a6
 ```
 
 The remaining examples use the source checkout form, `PYTHONPATH=src python3 -m aisync`. If you installed with `pipx`, use `aisync` instead.
@@ -103,9 +103,11 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault recipi
 
 ## 5. Preview Codex Sync
 
-Always preview first:
+Codex is the stable profile. Ask the CLI for the supported workflow, validate the profile, then preview first:
 
 ```bash
+PYTHONPATH=src python3 -m aisync profile workflow codex
+PYTHONPATH=src python3 -m aisync profile validate codex
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
 ```
 
@@ -137,30 +139,46 @@ Successful sync should:
 - write `manifests/*.json`
 - commit and push encrypted data to `aisync-vault`
 
-## 7. Optional: Preview Claude Code Sync
+## 7. Preview And Run Codex Restore
 
-Claude Code support is experimental and sync-only. Always inspect the profile and preview before a real sync:
+Close Codex before restore. Always preview first:
 
 ```bash
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault restore codex --dry-run
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault restore codex
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault history codex
+```
+
+Restore creates a backup under `backups/codex/` before writing. Default mode is `merge`; existing files are skipped unless you explicitly use `--mode replace-file`.
+
+## 8. Optional: Preview And Run Claude Code Sync
+
+Claude Code support is experimental and sync-only. Always inspect the supported workflow, validate the profile, and preview before a real sync:
+
+```bash
+PYTHONPATH=src python3 -m aisync profile workflow claude
 PYTHONPATH=src python3 -m aisync profile show claude
+PYTHONPATH=src python3 -m aisync profile validate claude
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync claude --dry-run
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync claude
 ```
 
 The profile includes selected project sessions, history, `CLAUDE.md`, commands, agents, and skills. Credentials, `.env` files, databases, private keys, and token-like files are denied. `restore claude` is intentionally disabled.
 
-## 8. Daily Usage
+## 9. Daily Usage
 
 ```bash
 cd ~/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault pull
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault conflicts
+PYTHONPATH=src python3 -m aisync profile workflow codex
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex
 ```
 
 `conflicts` should report `synced`, `ahead`, or `no-upstream` before you sync. If it reports `behind`, run `pull`; if it reports `diverged`, `dirty`, or `fetch-failed`, inspect the vault repository first.
 
-## 9. Verify The Vault
+## 10. Verify The Vault
 
 ```bash
 cd ~/Developer/projects/aisync-vault

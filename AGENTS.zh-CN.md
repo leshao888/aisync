@@ -129,8 +129,10 @@ aisync doctor
 aisync profile list
 aisync profile show codex
 aisync profile validate codex
+aisync profile workflow codex
 aisync profile show claude
 aisync profile validate claude
+aisync profile workflow claude
 aisync sync codex --dry-run
 aisync sync codex
 aisync sync claude --dry-run
@@ -204,8 +206,10 @@ aisync recipient remove <age-recipient>
 aisync profile list
 aisync profile show codex
 aisync profile validate codex
+aisync profile workflow codex
 aisync profile show claude
 aisync profile validate claude
+aisync profile workflow claude
 aisync sync codex --dry-run
 aisync sync codex
 aisync sync claude --dry-run

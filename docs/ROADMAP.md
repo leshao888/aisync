@@ -49,6 +49,7 @@ Current alpha progress:
 - `aisync history <profile>`
 - `aisync pull`
 - `aisync conflicts`
+- `aisync profile workflow <profile>`
 - richer `doctor`
 - stricter profile validation
 - conflict detection before sync writes a new vault package
@@ -56,6 +57,7 @@ Current alpha progress:
 - app-running warnings
 - Claude Code experimental sync-only profile
 - capability-gated restore behavior
+- CLI workflow guidance for Codex full sync/restore and Claude sync-only flows
 - Claude allowlist and denied-file boundary tests
 - Linux support
 - installation through `pipx`

@@ -16,6 +16,7 @@ from .operations import (
     profile_list,
     profile_show,
     profile_validate,
+    profile_workflow,
     pull_repo,
     recipient_add,
     recipient_list,
@@ -65,6 +66,8 @@ def build_parser() -> argparse.ArgumentParser:
     show_cmd.add_argument("name")
     validate_cmd = profile_sub.add_parser("validate", help="Validate a profile")
     validate_cmd.add_argument("name")
+    workflow_cmd = profile_sub.add_parser("workflow", help="Show the safe workflow for a profile")
+    workflow_cmd.add_argument("name")
 
     sync_cmd = sub.add_parser("sync", help="Sync an app profile")
     sync_cmd.add_argument("profile")
@@ -124,6 +127,8 @@ def main(argv: list[str] | None = None) -> int:
                 profile_show(args.name, ui)
             elif args.profile_command == "validate":
                 profile_validate(args.name, ui)
+            elif args.profile_command == "workflow":
+                profile_workflow(args.name, ui)
         elif args.command == "sync":
             source = Path(args.source).expanduser().resolve() if args.source else None
             sync(repo, args.profile, ui, dry_run=args.dry_run, source_override=source, push=not args.no_push)

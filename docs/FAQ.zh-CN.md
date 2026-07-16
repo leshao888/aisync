@@ -44,7 +44,7 @@ aisync --repo ~/Developer/projects/aisync-vault recipient add <age-recipient>
 
 ## AIsync 可以 sync Claude Code 或 Cursor 吗？
 
-Claude Code 已有 experimental sync-only profile。真实 sync 前请运行 `aisync profile show claude` 和 `aisync sync claude --dry-run`。由于 Claude Code data layout 和 restore behavior 尚未验证，restore 当前禁用。Cursor 和其他 profiles 仍在规划中。
+Claude Code 已有 experimental sync-only profile。真实 sync 前请运行 `aisync profile workflow claude`、`aisync profile show claude` 和 `aisync sync claude --dry-run`。由于 Claude Code data layout 和 restore behavior 尚未验证，restore 当前禁用。Cursor 和其他 profiles 仍在规划中。
 
 ## 多台机器可以同时 sync 吗？
 

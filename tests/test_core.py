@@ -126,6 +126,29 @@ class CoreTests(unittest.TestCase):
             self.assertFalse(target.exists())
             self.assertIn("Restore is disabled for profile: claude", out.getvalue())
 
+    def test_profile_workflow_reflects_codex_restore_support(self):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = main(["profile", "workflow", "codex"])
+        value = out.getvalue()
+        self.assertEqual(code, 0)
+        self.assertIn("supports_restore: true", value)
+        self.assertIn("aisync sync codex --dry-run", value)
+        self.assertIn("aisync restore codex --dry-run", value)
+        self.assertIn("aisync history codex", value)
+
+    def test_profile_workflow_reflects_claude_sync_only_support(self):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = main(["profile", "workflow", "claude"])
+        value = out.getvalue()
+        self.assertEqual(code, 0)
+        self.assertIn("supports_restore: false", value)
+        self.assertIn("experimental profile", value)
+        self.assertIn("aisync sync claude --dry-run", value)
+        self.assertIn("restore disabled for profile: claude", value)
+        self.assertNotIn("aisync restore claude --dry-run", value)
+
     def test_recipient_add_list_remove_and_refuse_last_remove(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp) / "repo"
@@ -586,11 +609,56 @@ class CoreTests(unittest.TestCase):
                 self.assertEqual(len(vaults), 1)
                 self.assertEqual(len(manifests), 1)
                 with redirect_stdout(io.StringIO()):
+                    self.assertEqual(main(["--repo", str(repo), "restore", "codex", "--dry-run", "--target", str(target), "--no-pull"]), 0)
+                self.assertFalse(target.exists())
+                self.assertFalse((repo / "backups" / "codex").exists())
+                with redirect_stdout(io.StringIO()):
                     self.assertEqual(main(["--repo", str(repo), "restore", "codex", "--target", str(target), "--no-pull"]), 0)
 
             self.assertEqual((target / "sessions" / "one.jsonl").read_text(encoding="utf-8"), '{"msg":"hello"}\n')
             self.assertEqual((target / "history.jsonl").read_text(encoding="utf-8"), '{"item":"h"}\n')
             self.assertTrue((repo / "backups" / "codex").exists())
+
+    def test_claude_sync_only_end_to_end_blocks_restore_after_sync(self):
+        if not shutil.which("git"):
+            self.skipTest("git is required for the Claude sync-only test")
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            fake_bin = tmp_path / "bin"
+            fake_bin.mkdir()
+            self._write_fake_tools(fake_bin)
+
+            source = tmp_path / "source"
+            repo = tmp_path / "repo"
+            target = tmp_path / "target"
+            (source / "projects" / "example").mkdir(parents=True)
+            (source / "projects" / "example" / "session.jsonl").write_text("{}\n", encoding="utf-8")
+            (source / "history.jsonl").write_text("{}\n", encoding="utf-8")
+
+            env = {"PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"}
+            with mock.patch.dict(os.environ, env, clear=False), mock.patch("aisync.operations.running_processes", return_value=[]):
+                with redirect_stdout(io.StringIO()):
+                    self.assertEqual(main(["--repo", str(repo), "init"]), 0)
+                self._configure_git(repo)
+                (repo / "recipients.txt").write_text("age1fake\n", encoding="utf-8")
+
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    self.assertEqual(main(["--repo", str(repo), "sync", "claude", "--dry-run", "--source", str(source)]), 0)
+                self.assertIn("WARN    experimental profile", out.getvalue())
+
+                with redirect_stdout(io.StringIO()):
+                    self.assertEqual(main(["--repo", str(repo), "sync", "claude", "--source", str(source), "--no-push"]), 0)
+                self.assertEqual(len(list((repo / "vault").glob("claude-*.age"))), 1)
+                self.assertEqual(len(list((repo / "manifests").glob("claude-*.json"))), 1)
+
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    code = main(["--repo", str(repo), "restore", "claude", "--dry-run", "--target", str(target), "--no-pull"])
+            self.assertEqual(code, 1)
+            self.assertIn("Restore is disabled for profile: claude", out.getvalue())
+            self.assertFalse(target.exists())
+            self.assertFalse((repo / "backups" / "claude").exists())
 
     def _git(self, cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(["git", *args], cwd=cwd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)

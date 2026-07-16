@@ -33,4 +33,7 @@ def safe_extract_tar_gz(archive_path: Path, dest_dir: Path) -> None:
                     f"Unsafe archive member: {member.name}",
                     next_action="Do not restore this package.",
                 ) from exc
-        tar.extractall(dest_dir)
+        try:
+            tar.extractall(dest_dir, filter="data")
+        except TypeError:
+            tar.extractall(dest_dir)

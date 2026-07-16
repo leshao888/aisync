@@ -44,7 +44,7 @@ You cannot decrypt old vault packages unless another recipient can decrypt them.
 
 ## Can AIsync sync Claude Code or Cursor?
 
-Claude Code has an experimental sync-only profile. Run `aisync profile show claude` and `aisync sync claude --dry-run` before a real sync. Restore is disabled because the Claude Code data layout and restore behavior are not yet validated. Cursor and other profiles remain planned.
+Claude Code has an experimental sync-only profile. Run `aisync profile workflow claude`, `aisync profile show claude`, and `aisync sync claude --dry-run` before a real sync. Restore is disabled because the Claude Code data layout and restore behavior are not yet validated. Cursor and other profiles remain planned.
 
 ## Can multiple machines sync at the same time?
 

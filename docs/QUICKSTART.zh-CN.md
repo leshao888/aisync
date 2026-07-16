@@ -56,7 +56,7 @@ PYTHONPATH=src python3 -m aisync --version
 你应该看到：
 
 ```text
-aisync 0.2.0a5
+aisync 0.2.0a6
 ```
 
 后续示例使用 source checkout 写法：`PYTHONPATH=src python3 -m aisync`。如果你使用 `pipx` 安装，请直接替换为 `aisync`。
@@ -103,9 +103,11 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault recipi
 
 ## 5. 预览 Codex sync
 
-永远先预览：
+Codex 是 stable profile。先让 CLI 显示支持的 workflow，校验 profile，然后永远先预览：
 
 ```bash
+PYTHONPATH=src python3 -m aisync profile workflow codex
+PYTHONPATH=src python3 -m aisync profile validate codex
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
 ```
 
@@ -137,30 +139,46 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync c
 - 写入 `manifests/*.json`
 - commit 并 push encrypted data 到 `aisync-vault`
 
-## 7. 可选：预览 Claude Code sync
+## 7. 预览并执行 Codex restore
 
-Claude Code support 目前是 experimental 且仅支持 sync。执行真实 sync 前必须检查 profile 并预览：
+Restore 前请关闭 Codex，并永远先预览：
 
 ```bash
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault restore codex --dry-run
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault restore codex
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault history codex
+```
+
+Restore 写入前会在 `backups/codex/` 下创建 backup。默认 mode 是 `merge`；已有文件会被跳过，除非你明确使用 `--mode replace-file`。
+
+## 8. 可选：预览并执行 Claude Code sync
+
+Claude Code support 目前是 experimental 且仅支持 sync。执行真实 sync 前必须查看支持的 workflow、校验 profile 并预览：
+
+```bash
+PYTHONPATH=src python3 -m aisync profile workflow claude
 PYTHONPATH=src python3 -m aisync profile show claude
+PYTHONPATH=src python3 -m aisync profile validate claude
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync claude --dry-run
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync claude
 ```
 
 该 profile 只 include 选定的 project sessions、history、`CLAUDE.md`、commands、agents 和 skills。Credentials、`.env` files、databases、private keys 和 token-like files 会被 deny。`restore claude` 被有意禁用。
 
-## 8. 日常使用
+## 9. 日常使用
 
 ```bash
 cd ~/Developer/projects/aisync
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault pull
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault conflicts
+PYTHONPATH=src python3 -m aisync profile workflow codex
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex
 ```
 
 `conflicts` 在 sync 前应显示 `synced`、`ahead` 或 `no-upstream`。如果显示 `behind`，先运行 `pull`；如果显示 `diverged`、`dirty` 或 `fetch-failed`，请先检查 vault repository。
 
-## 9. 检查 vault
+## 10. 检查 vault
 
 ```bash
 cd ~/Developer/projects/aisync-vault

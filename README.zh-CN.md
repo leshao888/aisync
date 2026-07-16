@@ -2,7 +2,7 @@
 
 简体中文 | [English](README.md)
 
-![版本](https://img.shields.io/badge/version-0.2.0a5-0A7AFF)
+![版本](https://img.shields.io/badge/version-0.2.0a6-0A7AFF)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-3776AB)
 ![Profiles](https://img.shields.io/badge/profiles-Codex%20%7C%20Claude%20experimental-111827)
 ![加密](https://img.shields.io/badge/encryption-age-22C55E)
@@ -87,25 +87,35 @@ PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault doctor
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault recipient list
 ```
 
-预览并执行 Codex sync：
+查看每个 profile 支持的完整流程：
 
 ```bash
-PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
-PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex
+PYTHONPATH=src python3 -m aisync profile workflow codex
+PYTHONPATH=src python3 -m aisync profile workflow claude
 ```
 
-完整指南见：[Quick Start](docs/QUICKSTART.zh-CN.md)。
-
-## Restore
-
-Restore 前请先关闭 Codex，并先执行 dry-run：
+Codex 是 stable profile，支持完整 sync 和 restore 流程：
 
 ```bash
+PYTHONPATH=src python3 -m aisync profile validate codex
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex --dry-run
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync codex
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault restore codex --dry-run
 PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault restore codex
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault history codex
 ```
 
 Restore 写入前会创建 backup。完整恢复指南见：[Recovery](docs/RECOVERY.zh-CN.md)。
+
+Claude Code 是 experimental 且 sync-only：
+
+```bash
+PYTHONPATH=src python3 -m aisync profile validate claude
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync claude --dry-run
+PYTHONPATH=src python3 -m aisync --repo ~/Developer/projects/aisync-vault sync claude
+```
+
+`restore claude` 被有意禁用。完整指南见：[Quick Start](docs/QUICKSTART.zh-CN.md)。
 
 ## Commands
 
@@ -122,8 +132,10 @@ aisync recipient remove <age-recipient>
 aisync profile list
 aisync profile show codex
 aisync profile validate codex
+aisync profile workflow codex
 aisync profile show claude
 aisync profile validate claude
+aisync profile workflow claude
 aisync sync codex --dry-run
 aisync sync codex
 aisync sync claude --dry-run
@@ -151,7 +163,7 @@ OK      git push completed
 
 ## 当前状态
 
-`v0.2.0a5` 是完成 v0.2 规划收尾的 alpha 迭代版本。Codex 是第一个 stable profile。Claude Code 提供 experimental sync-only profile，并由严格的 capability gate 阻止 restore，直到其 layout 和 restore behavior 通过验证。
+`v0.2.0a6` 是完成 v0.2 规划收尾并在 CLI 中提供完整 profile workflow 的 alpha 迭代版本。Codex 是第一个 stable profile。Claude Code 提供 experimental sync-only profile，并由严格的 capability gate 阻止 restore，直到其 layout 和 restore behavior 通过验证。
 
 当前限制：
 
@@ -162,6 +174,7 @@ OK      git push completed
 - `sync` 默认启用 push；没有 Git remote 时会中止。
 - 如果 vault repository 是 behind、diverged 或无法 fetch remote state，`sync` 会在写入新的 encrypted package 前中止。
 - Remote privacy 需要用户手动确认。
+- `profile workflow` 会显示每个 profile 支持的命令流程。
 - `sync claude` 是 experimental，必须先使用 `--dry-run` 预览；`restore claude` 已禁用。
 - Restore 支持 `merge` 和 `replace-file`；暂不提供危险的整目录替换。
 - 当前 archive format 使用 Python 标准库的 `tar.gz`。后续可添加 `zstd`。

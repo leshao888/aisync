@@ -49,6 +49,7 @@
 - `aisync history <profile>`
 - `aisync pull`
 - `aisync conflicts`
+- `aisync profile workflow <profile>`
 - richer `doctor`
 - stricter profile validation
 - sync 写入新的 vault package 前进行 conflict detection
@@ -56,6 +57,7 @@
 - app-running warnings
 - Claude Code experimental sync-only profile
 - capability-gated restore behavior
+- Codex full sync/restore 和 Claude sync-only flows 的 CLI workflow guidance
 - Claude allowlist 和 denied-file boundary tests
 - Linux support
 - installation through `pipx`

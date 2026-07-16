@@ -155,6 +155,25 @@ def profile_validate(name: str, ui: UI) -> None:
     ui.info(f"profile sha256: {profile.digest}")
 
 
+def profile_workflow(name: str, ui: UI) -> None:
+    profile = load_profile(name)
+    ui.info(f"profile: {profile.name}")
+    ui.info(f"stability: {profile.stability}")
+    ui.info(f"supports_restore: {str(profile.supports_restore).lower()}")
+    if profile.stability == "experimental":
+        ui.warn("experimental profile: preview before every real sync")
+    ui.next(f"aisync profile validate {profile.name}")
+    ui.next(f"aisync sync {profile.name} --dry-run")
+    ui.next(f"aisync sync {profile.name}")
+    if profile.supports_restore:
+        ui.next(f"aisync restore {profile.name} --dry-run")
+        ui.next(f"aisync restore {profile.name}")
+        ui.next(f"aisync history {profile.name}")
+    else:
+        ui.warn(f"restore disabled for profile: {profile.name}")
+        ui.next(f"Use sync-only workflow for {profile.name}; do not run restore for this profile.")
+
+
 def pull_repo(repo: Path, ui: UI) -> None:
     pull(repo)
     ui.ok("git pull completed")
