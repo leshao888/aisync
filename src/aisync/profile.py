@@ -12,7 +12,9 @@ from .simple_yaml import load_simple_yaml
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-BUILTIN_PROFILES = PROJECT_ROOT / "profiles"
+PACKAGE_PROFILES = Path(__file__).resolve().parent / "profiles"
+SOURCE_TREE_PROFILES = PROJECT_ROOT / "profiles"
+BUILTIN_PROFILES = PACKAGE_PROFILES if PACKAGE_PROFILES.exists() else SOURCE_TREE_PROFILES
 
 
 @dataclass(frozen=True)

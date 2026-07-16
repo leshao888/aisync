@@ -1,0 +1,61 @@
+schema_version: 1
+name: claude
+stability: experimental
+
+source:
+  macos: "~/.claude"
+  linux: "~/.claude"
+  windows: "%USERPROFILE%\\.claude"
+
+include:
+  - projects/**
+  - history.jsonl
+  - CLAUDE.md
+  - commands/**
+  - agents/**
+  - skills/**
+
+deny:
+  - .credentials.json
+  - credentials.json
+  - "*.sqlite"
+  - "*.sqlite-shm"
+  - "*.sqlite-wal"
+  - ".env"
+  - "**/.env"
+  - "*token*"
+  - "*secret*"
+  - "*credential*"
+  - id_rsa
+  - id_ed25519
+  - "*.pem"
+  - "*.key"
+  - cache/**
+  - debug/**
+  - telemetry/**
+  - statsig/**
+  - shell-snapshots/**
+  - session-env/**
+  - file-history/**
+
+risk:
+  projects/**: scan-required
+  history.jsonl: scan-required
+  CLAUDE.md: scan-required
+  commands/**: scan-required
+  agents/**: scan-required
+  skills/**: scan-required
+
+restore:
+  default_mode: preview
+  allow_overwrite: false
+
+capabilities:
+  supports_restore: false
+  supports_merge: false
+  requires_app_closed_for_restore: true
+
+process_names:
+  - Claude
+  - claude
+  - Claude Code

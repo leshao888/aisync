@@ -16,6 +16,8 @@ from aisync.cli import main
 from aisync.collector import discover_files
 from aisync.errors import DangerError, ProfileError, RestoreError
 from aisync.gitstore import commit_and_push
+from aisync.platforms import default_config_dir
+from aisync.processes import running_processes
 from aisync.profile import list_profiles, load_profile, validate_profile
 
 
@@ -26,6 +28,7 @@ class CoreTests(unittest.TestCase):
         self.assertIn("sessions/**", profile.include)
         self.assertIn("auth.json", profile.deny)
         self.assertTrue(profile.supports_restore)
+        self.assertEqual(profile.path.parent.name, "profiles")
 
     def test_claude_experimental_profile_loads_by_natural_name(self):
         profile = load_profile("claude")
@@ -277,6 +280,29 @@ class CoreTests(unittest.TestCase):
             with self.assertRaises(ProfileError):
                 validate_profile(raw, path)
 
+    def test_linux_default_config_uses_xdg_config_home(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            xdg = Path(tmp) / "xdg"
+            with mock.patch("aisync.platforms.platform.system", return_value="Linux"), mock.patch.dict(
+                os.environ,
+                {"XDG_CONFIG_HOME": str(xdg)},
+                clear=False,
+            ):
+                self.assertEqual(default_config_dir(), xdg.resolve() / "aisync")
+
+    def test_linux_process_detection_falls_back_to_proc(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = Path(tmp) / "proc"
+            (proc / "100").mkdir(parents=True)
+            (proc / "100" / "comm").write_text("codex\n", encoding="utf-8")
+            (proc / "101").mkdir()
+            (proc / "101" / "cmdline").write_bytes(b"/opt/bin/Claude Code\0--flag\0")
+            with mock.patch("aisync.processes.platform.system", return_value="Linux"), mock.patch(
+                "aisync.processes.shutil.which",
+                return_value=None,
+            ):
+                self.assertEqual(running_processes(["codex", "Claude Code", "missing"], proc_root=proc), ["codex", "Claude Code"])
+
     def test_pull_requires_git_repository(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp) / "repo"
@@ -439,6 +465,40 @@ class CoreTests(unittest.TestCase):
             self.assertIn("age identity missing", out.getvalue())
             self.assertNotIn("PRIVATE", out.getvalue())
 
+    def test_secret_scan_failure_does_not_print_scanner_output_or_write_vault(self):
+        if not shutil.which("git"):
+            self.skipTest("git is required for scanner failure test")
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            fake_bin = tmp_path / "bin"
+            fake_bin.mkdir()
+            self._write_fake_tools(fake_bin)
+            (fake_bin / "gitleaks").write_text(
+                "#!/bin/sh\n"
+                "printf 'leaked SUPER_SECRET_TOKEN_VALUE\\n'\n"
+                "exit 1\n",
+                encoding="utf-8",
+            )
+            (fake_bin / "gitleaks").chmod(0o755)
+            source = tmp_path / "source"
+            repo = tmp_path / "repo"
+            (source / "sessions").mkdir(parents=True)
+            (source / "sessions" / "one.jsonl").write_text("SUPER_SECRET_TOKEN_VALUE\n", encoding="utf-8")
+            env = {"PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"}
+            with mock.patch.dict(os.environ, env, clear=False), mock.patch("aisync.operations.running_processes", return_value=[]):
+                with redirect_stdout(io.StringIO()):
+                    self.assertEqual(main(["--repo", str(repo), "init"]), 0)
+                self._configure_git(repo)
+                (repo / "recipients.txt").write_text("age1fake\n", encoding="utf-8")
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    code = main(["--repo", str(repo), "sync", "codex", "--source", str(source), "--no-push"])
+            value = out.getvalue()
+            self.assertEqual(code, 2)
+            self.assertIn("Scanner output is hidden", value)
+            self.assertNotIn("SUPER_SECRET_TOKEN_VALUE", value)
+            self.assertEqual(list((repo / "vault").glob("codex-*.age")), [])
+
     def test_history_reads_manifests_without_file_contents(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp) / "repo"
@@ -476,6 +536,18 @@ class CoreTests(unittest.TestCase):
                 payload = tmp_path / "payload.txt"
                 payload.write_text("x", encoding="utf-8")
                 tar.add(payload, arcname="../escape.txt")
+            with self.assertRaises(RestoreError):
+                safe_extract_tar_gz(archive, tmp_path / "out")
+
+    def test_safe_extract_rejects_archive_symlink_member(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            archive = tmp_path / "bad-symlink.tar.gz"
+            with tarfile.open(archive, "w:gz") as tar:
+                link = tarfile.TarInfo("sessions/link")
+                link.type = tarfile.SYMTYPE
+                link.linkname = "../outside"
+                tar.addfile(link)
             with self.assertRaises(RestoreError):
                 safe_extract_tar_gz(archive, tmp_path / "out")
 

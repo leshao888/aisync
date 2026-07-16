@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) | English
 
-![Version](https://img.shields.io/badge/version-0.2.0a4-0A7AFF)
+![Version](https://img.shields.io/badge/version-0.2.0a5-0A7AFF)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-3776AB)
 ![Profiles](https://img.shields.io/badge/profiles-Codex%20%7C%20Claude%20experimental-111827)
 ![Encryption](https://img.shields.io/badge/encryption-age-22C55E)
@@ -48,13 +48,22 @@ This source repository can be public. Your `aisync-vault` repository should be p
 
 ## Quick Start
 
-Install required tools:
+Install required tools on macOS:
 
 ```bash
 brew install age gitleaks
 ```
 
-Clone and run AIsync:
+On Linux, install `git`, `age`, and `gitleaks` from your distro packages or the upstream release pages.
+
+Install AIsync with `pipx`:
+
+```bash
+pipx install git+https://github.com/leshao888/aisync.git
+aisync --version
+```
+
+Or clone and run from source:
 
 ```bash
 git clone git@github.com:leshao888/aisync.git
@@ -142,11 +151,13 @@ OK      git push completed
 
 ## Current Status
 
-`v0.2.0a4` is an alpha iteration. Codex is the first stable profile. Claude Code now has an experimental sync-only profile with a strict capability gate that blocks restore until its layout and restore behavior are validated.
+`v0.2.0a5` is an alpha iteration that closes the planned v0.2 scope. Codex is the first stable profile. Claude Code has an experimental sync-only profile with a strict capability gate that blocks restore until its layout and restore behavior are validated.
 
 Current limitations:
 
 - `doctor` requires `git`, `age`, and `gitleaks`.
+- `pipx` installation is supported from the Git repository; packaged release publishing is still planned for v0.3.
+- Linux path handling honors `XDG_CONFIG_HOME`, and restore app-running checks fall back to `/proc` when `pgrep` is unavailable.
 - `sync` stops if the repo is not initialized with Git.
 - `sync` with push enabled stops if no Git remote is configured.
 - `sync` stops before writing a new encrypted package if the vault repository is behind, diverged, or cannot fetch remote state.

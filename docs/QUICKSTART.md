@@ -23,6 +23,8 @@ On macOS:
 brew install age gitleaks gh
 ```
 
+On Linux, install `git`, `age`, `gitleaks`, and optionally `gh` from your distro packages or upstream release pages. AIsync uses `XDG_CONFIG_HOME` for its local config directory when it is set.
+
 Check:
 
 ```bash
@@ -32,7 +34,16 @@ gitleaks version
 gh auth status
 ```
 
-## 2. Clone AIsync
+## 2. Install AIsync
+
+Recommended for an isolated CLI install:
+
+```bash
+pipx install git+https://github.com/leshao888/aisync.git
+aisync --version
+```
+
+For source development:
 
 ```bash
 mkdir -p ~/Developer/projects
@@ -45,8 +56,10 @@ PYTHONPATH=src python3 -m aisync --version
 You should see:
 
 ```text
-aisync 0.2.0a4
+aisync 0.2.0a5
 ```
+
+The remaining examples use the source checkout form, `PYTHONPATH=src python3 -m aisync`. If you installed with `pipx`, use `aisync` instead.
 
 ## 3. Create A Private Vault Repository
 

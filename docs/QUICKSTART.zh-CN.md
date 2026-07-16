@@ -23,6 +23,8 @@ macOS：
 brew install age gitleaks gh
 ```
 
+Linux 上请通过发行版包管理器或 upstream release pages 安装 `git`、`age`、`gitleaks`，可选安装 `gh`。如果设置了 `XDG_CONFIG_HOME`，AIsync 会使用它作为 local config directory 的基准。
+
 检查：
 
 ```bash
@@ -32,7 +34,16 @@ gitleaks version
 gh auth status
 ```
 
-## 2. Clone AIsync
+## 2. 安装 AIsync
+
+推荐用 `pipx` 做隔离 CLI 安装：
+
+```bash
+pipx install git+https://github.com/leshao888/aisync.git
+aisync --version
+```
+
+如果要进行源码开发：
 
 ```bash
 mkdir -p ~/Developer/projects
@@ -45,8 +56,10 @@ PYTHONPATH=src python3 -m aisync --version
 你应该看到：
 
 ```text
-aisync 0.2.0a4
+aisync 0.2.0a5
 ```
+
+后续示例使用 source checkout 写法：`PYTHONPATH=src python3 -m aisync`。如果你使用 `pipx` 安装，请直接替换为 `aisync`。
 
 ## 3. 创建 private vault repository
 

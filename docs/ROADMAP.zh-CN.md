@@ -57,12 +57,12 @@
 - Claude Code experimental sync-only profile
 - capability-gated restore behavior
 - Claude allowlist 和 denied-file boundary tests
-
-新增：
-
 - Linux support
 - installation through `pipx`
 - dangerous scenarios 的 tests
+- installed CLI 使用 package-data bundled profiles
+- archive restore 拒绝 symlinks 和其他 non-file members
+- scanner failure output 会隐藏，避免泄露 secrets
 
 ## v0.3: Public Preview
 

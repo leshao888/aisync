@@ -30,10 +30,8 @@ def scan_secrets(staging: Path) -> None:
     )
     result = run([gitleaks, "detect", "--no-git", "--source", str(staging), "--redact", "--verbose"])
     if result.returncode != 0:
-        output = "\n".join(part for part in [result.stdout.strip(), result.stderr.strip()] if part)
         raise DangerError(
             "Secret scanner found a possible secret or failed.",
-            why=output[:1200] if output else "gitleaks returned a non-zero exit code.",
+            why="gitleaks returned a non-zero exit code. Scanner output is hidden to avoid leaking local secrets.",
             next_action="Remove or redact the secret from local app data, then run sync again.",
         )
-

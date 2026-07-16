@@ -57,12 +57,12 @@ Current alpha progress:
 - Claude Code experimental sync-only profile
 - capability-gated restore behavior
 - Claude allowlist and denied-file boundary tests
-
-Add:
-
 - Linux support
 - installation through `pipx`
 - tests for dangerous scenarios
+- package-data bundled profiles for installed CLI use
+- archive restore rejects symlinks and other non-file members
+- scanner failure output is hidden to avoid secret leakage
 
 ## v0.3: Public Preview
 

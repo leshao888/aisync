@@ -1,0 +1,59 @@
+schema_version: 1
+name: codex
+stability: stable
+
+source:
+  macos: "~/.codex"
+  linux: "~/.codex"
+  windows: "%USERPROFILE%\\.codex"
+
+include:
+  - sessions/**
+  - session_index.jsonl
+  - history.jsonl
+  - config.toml
+  - skills/**
+
+deny:
+  - auth.json
+  - installation_id
+  - chrome-native-hosts-v2.json
+  - "*.sqlite"
+  - "*.sqlite-shm"
+  - "*.sqlite-wal"
+  - ".env"
+  - "**/.env"
+  - "**/*token*"
+  - "**/*secret*"
+  - "**/*credential*"
+  - "**/id_rsa"
+  - "**/id_ed25519"
+  - plugins/**
+  - .tmp/**
+  - tmp/**
+  - computer-use/**
+  - process_manager/**
+  - node_repl/**
+  - vendor_imports/**
+  - visualizations/**
+  - ambient-suggestions/**
+  - shell_snapshots/**
+
+risk:
+  sessions/**: scan-required
+  history.jsonl: scan-required
+  config.toml: warn-and-scan
+  skills/**: scan-required
+
+restore:
+  default_mode: merge
+  allow_overwrite: false
+
+capabilities:
+  supports_restore: true
+  supports_merge: true
+  requires_app_closed_for_restore: true
+
+process_names:
+  - Codex
+  - codex

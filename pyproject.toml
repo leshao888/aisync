@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aisync"
-version = "0.2.0a4"
+version = "0.2.0a5"
 description = "Privacy-first sync for local AI app data"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,3 +22,6 @@ package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+aisync = ["profiles/*.yaml"]

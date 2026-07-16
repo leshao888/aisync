@@ -27,10 +27,15 @@ def default_config_dir() -> Path:
     override = os.environ.get("AISYNC_CONFIG_DIR")
     if override:
         return expand_path(override)
-    if platform_key() == "windows":
+    key = platform_key()
+    if key == "windows":
         appdata = os.environ.get("APPDATA")
         if appdata:
             return Path(appdata) / "aisync"
+    if key == "linux":
+        xdg_config = os.environ.get("XDG_CONFIG_HOME")
+        if xdg_config:
+            return expand_path(xdg_config) / "aisync"
     return Path.home() / ".config" / "aisync"
 
 
@@ -39,4 +44,3 @@ def default_repo() -> Path:
     if override:
         return expand_path(override)
     return Path.cwd().resolve()
-

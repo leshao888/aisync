@@ -2,7 +2,7 @@
 
 简体中文 | [English](README.md)
 
-![版本](https://img.shields.io/badge/version-0.2.0a4-0A7AFF)
+![版本](https://img.shields.io/badge/version-0.2.0a5-0A7AFF)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-3776AB)
 ![Profiles](https://img.shields.io/badge/profiles-Codex%20%7C%20Claude%20experimental-111827)
 ![加密](https://img.shields.io/badge/encryption-age-22C55E)
@@ -48,13 +48,22 @@ another machine ~/.codex
 
 ## Quick Start
 
-安装必需工具：
+在 macOS 安装必需工具：
 
 ```bash
 brew install age gitleaks
 ```
 
-Clone 并运行 AIsync：
+Linux 上请通过发行版包管理器或 upstream release pages 安装 `git`、`age` 和 `gitleaks`。
+
+使用 `pipx` 安装 AIsync：
+
+```bash
+pipx install git+https://github.com/leshao888/aisync.git
+aisync --version
+```
+
+也可以从源码运行：
 
 ```bash
 git clone git@github.com:leshao888/aisync.git
@@ -142,11 +151,13 @@ OK      git push completed
 
 ## 当前状态
 
-`v0.2.0a4` 是 alpha 迭代版本。Codex 是第一个 stable profile。Claude Code 现在提供 experimental sync-only profile，并由严格的 capability gate 阻止 restore，直到其 layout 和 restore behavior 通过验证。
+`v0.2.0a5` 是完成 v0.2 规划收尾的 alpha 迭代版本。Codex 是第一个 stable profile。Claude Code 提供 experimental sync-only profile，并由严格的 capability gate 阻止 restore，直到其 layout 和 restore behavior 通过验证。
 
 当前限制：
 
 - `doctor` 要求安装 `git`、`age` 和 `gitleaks`。
+- 支持从 Git repository 使用 `pipx` 安装；正式发布包仍规划在 v0.3。
+- Linux path handling 支持 `XDG_CONFIG_HOME`，restore 的 app-running 检测在没有 `pgrep` 时会 fallback 到 `/proc`。
 - `sync` 会在 repo 未执行 Git 初始化时中止。
 - `sync` 默认启用 push；没有 Git remote 时会中止。
 - 如果 vault repository 是 behind、diverged 或无法 fetch remote state，`sync` 会在写入新的 encrypted package 前中止。

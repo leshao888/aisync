@@ -19,6 +19,12 @@ def safe_extract_tar_gz(archive_path: Path, dest_dir: Path) -> None:
     root = dest_dir.resolve()
     with tarfile.open(archive_path, "r:gz") as tar:
         for member in tar.getmembers():
+            if not member.isfile() and not member.isdir():
+                raise RestoreError(
+                    f"Unsafe archive member type: {member.name}",
+                    why="Restore archives may contain regular files and directories only.",
+                    next_action="Do not restore this package.",
+                )
             target = (dest_dir / member.name).resolve()
             try:
                 target.relative_to(root)
@@ -28,4 +34,3 @@ def safe_extract_tar_gz(archive_path: Path, dest_dir: Path) -> None:
                     next_action="Do not restore this package.",
                 ) from exc
         tar.extractall(dest_dir)
-
